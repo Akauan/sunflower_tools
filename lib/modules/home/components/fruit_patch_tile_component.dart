@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart'; // Imports the Flutter library.
 import 'package:sunflower_tools/modules/shared/models/fruit_patch_model.dart';
 import 'package:sunflower_tools/modules/shared/components/generic_tile_component.dart'; // Imports the GenericTileComponent.
@@ -15,7 +13,6 @@ class FruitPatchTileComponent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Assuming a static image for fruit patches.
-    log(getCropGrowTime(fruitPatch.name.toLowerCase()).toString());
     return GenericTileComponent(
       item: fruitPatch,
       title: fruitPatch.name,

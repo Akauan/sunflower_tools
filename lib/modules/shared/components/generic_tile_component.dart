@@ -4,14 +4,11 @@ import 'package:flutter/material.dart'; // Imports the Flutter library.
 import 'package:get/get.dart'; // Imports the GetX library for state management.
 import 'package:sunflower_tools/modules/shared/components/expansion_tile_component.dart'; // Imports the ExpansionTile component.
 import 'package:sunflower_tools/modules/shared/components/text_component.dart'; // Imports the TextComponent.
-import 'package:sunflower_tools/modules/shared/config/locations.dart';
-import 'package:sunflower_tools/modules/shared/config/notification_service.dart';
 import 'package:sunflower_tools/modules/shared/constants/image_way_constants.dart';
 import 'package:sunflower_tools/modules/shared/constants/size_constants.dart'; // Imports general constants.
 import 'package:sunflower_tools/modules/shared/config/cooldown_controller.dart'; // Imports the CooldownController.
 import 'package:sunflower_tools/modules/shared/config/timer.dart';
 import 'package:sunflower_tools/modules/shared/theme/theme.dart'; // Imports the Theme.
-import 'package:timezone/timezone.dart' as tz;
 
 class GenericTileComponent<T> extends StatelessWidget {
   final T item; // Generic item to be displayed.
@@ -54,6 +51,8 @@ class GenericTileComponent<T> extends StatelessWidget {
       cooldownController.startCooldown(
           cooldown, title); // Pass title to be used in notification
     }
+
+    log(rewards.toString());
 
     return Obx(
       () => ExpansionTileComponent(
@@ -108,14 +107,21 @@ class GenericTileComponent<T> extends StatelessWidget {
                                         height: kIconsSizeUltraSmall,
                                         fit: BoxFit.fill,
                                       )
-                                    : item['name'].contains('Coin')
+                                    : item['name'] == 'Coin'
                                         ? Image.asset(
-                                            'assets/images/webp/coins.webp',
+                                            getImageWay('coin'),
                                             width: kIconsSizeUltraSmall,
                                             height: kIconsSizeUltraSmall,
                                             fit: BoxFit.fill,
                                           )
-                                        : Container(), // Empty container if reward type is neither Seed nor Coin
+                                        : item['name'] == 'Gold'
+                                            ? Image.asset(
+                                                getImageWay('gold'),
+                                                width: kIconsSizeUltraSmall,
+                                                height: kIconsSizeUltraSmall,
+                                                fit: BoxFit.fill,
+                                              )
+                                            : Container(), // Empty container if reward type is neither Seed nor Coin
                                 const SizedBox(width: 10),
                                 TextComponent(
                                   text: '${item['name']}: ${item['amount']}',

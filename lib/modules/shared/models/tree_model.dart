@@ -1,4 +1,5 @@
 import 'package:sunflower_tools/modules/shared/models/quantity_value_model.dart';
+import 'package:sunflower_tools/modules/shared/models/reward_model.dart';
 
 class TreeModel {
   int? x;
@@ -6,6 +7,7 @@ class TreeModel {
   int? y;
   int? createdAt;
   int? height;
+  Reward? reward;
   Wood? wood;
 
   TreeModel({
@@ -15,6 +17,7 @@ class TreeModel {
     this.createdAt,
     this.height,
     this.wood,
+    this.reward,
   });
 
   factory TreeModel.fromJson(Map<String, dynamic> json) {
@@ -25,6 +28,7 @@ class TreeModel {
       createdAt: json['createdAt']?.toInt(),
       height: json['height']?.toInt(),
       wood: json['wood'] != null ? Wood.fromJson(json['wood']) : null,
+      reward: json['reward'] != null ? Reward.fromJson(json['reward']) : null,
     );
   }
 
@@ -36,6 +40,7 @@ class TreeModel {
       'createdAt': createdAt,
       'height': height,
       'wood': wood?.toJson(),
+      'reward': reward?.toJson(),
     };
   }
 }
@@ -69,12 +74,14 @@ class TreeGroup {
   int quantityGroup;
   List<QuantityValue> quantitiesWithValues;
   int? earliestChoppedAt;
+  Reward? reward;
 
   TreeGroup({
     required this.amount,
     this.quantityGroup = 1,
     required this.quantitiesWithValues,
     this.earliestChoppedAt,
+    this.reward,
   });
 
   Map<String, dynamic> toJson() {
@@ -84,6 +91,7 @@ class TreeGroup {
       'quantitiesWithValues':
           quantitiesWithValues.map((qv) => qv.toJson()).toList(),
       'earliestChoppedAt': earliestChoppedAt,
+      'reward': reward?.toJson(),
     };
   }
 }

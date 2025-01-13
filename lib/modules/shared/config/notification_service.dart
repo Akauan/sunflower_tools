@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -78,9 +79,8 @@ class NotificationService {
         0, title, body, platformChannelSpecifics);
   }
 
-  // Show a schedule notification
-  Future<void> showScheduleNotification(
-      String title, String body, DateTime scheduledDate) async {
+  Future<void> showScheduleNotification(String title, String body,
+      DateTime scheduledDate, String itemName) async {
     const NotificationDetails platformChannelSpecifics = NotificationDetails(
       android: AndroidNotificationDetails(
         'channelId',
@@ -91,8 +91,11 @@ class NotificationService {
       iOS: DarwinNotificationDetails(),
     );
 
+    // Gerar um ID único baseado no nome do item
+    String uniqueId = itemName.hashCode.toString(); // Usando o hashCode do nome
+
     await flutterLocalNotificationsPlugin.zonedSchedule(
-      _id++,
+      int.parse(uniqueId), // Usar o hashCode como o ID
       title,
       body,
       tz.TZDateTime.from(scheduledDate, tz.local),
@@ -277,6 +280,27 @@ class NotificationService {
       builder: (BuildContext context) => AlertDialog(
         title: const Text('Messaging style'),
         content: dialogContent,
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> checkPendingNotificationRequests(BuildContext context) async {
+    final List<PendingNotificationRequest> pendingNotificationRequests =
+        await flutterLocalNotificationsPlugin.pendingNotificationRequests();
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        content:
+            Text('${pendingNotificationRequests.length} pending notification '
+                'requests'),
         actions: <Widget>[
           TextButton(
             onPressed: () {

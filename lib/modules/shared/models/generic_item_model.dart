@@ -1,12 +1,12 @@
 class Item {
-  int? amount;
+  double? amount;
   String? name;
 
   Item({this.amount, this.name});
 
   factory Item.fromJson(Map<String, dynamic> json) {
     return Item(
-      amount: json['amount']?.toInt(), // Convert double to int
+      amount: json['amount']?.toDouble(), // Convert double to int
       name: json['name'],
     );
   }

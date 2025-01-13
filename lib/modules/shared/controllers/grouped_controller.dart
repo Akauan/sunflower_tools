@@ -40,10 +40,9 @@ class GroupedController extends GetxController {
       NotificationService().showScheduleNotification(
           name,
           "$name Ready!",
-          addCooldownWithTimezone(
-              earliestTime,
-              getCropGrowTime(growName.toLowerCase()),
-              'America/Sao_Paulo')); // Agendando a notificação para o momento em que o cooldown zerar
+          addCooldownWithTimezone(earliestTime,
+              getCropGrowTime(growName.toLowerCase()), 'America/Sao_Paulo'),
+          name); // Agendando a notificação para o momento em que o cooldown zerar
     }
   }
 
