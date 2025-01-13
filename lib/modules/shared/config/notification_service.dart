@@ -6,14 +6,18 @@ class CustomNotification {
   final String? title;
   final String? body;
   final String? playload;
+  final Map<String, dynamic>? data;
 
-  CustomNotification({
+  CustomNotification(
+    this.data, {
     required this.id,
     required this.title,
     required this.body,
     this.playload,
   });
 }
+
+String? selectedNotificationPayload;
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -84,11 +88,11 @@ class NotificationService {
       0,
       title,
       body,
-      tz.TZDateTime.from(scheduledDate, tz.local),
+      tz.TZDateTime.now(tz.local).add(const Duration(seconds: 5)),
       platformChannelSpecifics,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
-      androidScheduleMode: AndroidScheduleMode.exact,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.dateAndTime,
     );
   }
