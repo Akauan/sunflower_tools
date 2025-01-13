@@ -1,6 +1,10 @@
 import 'dart:developer';
 
 import 'package:get/get.dart';
+import 'package:sunflower_tools/modules/shared/config/locations.dart';
+import 'package:sunflower_tools/modules/shared/config/notification_service.dart';
+import 'package:sunflower_tools/modules/shared/config/timer.dart';
+import 'package:sunflower_tools/modules/shared/constants/time_contatants.dart';
 import 'package:sunflower_tools/modules/shared/models/crimstone_model.dart';
 import 'package:sunflower_tools/modules/shared/models/crop_model.dart';
 import 'package:sunflower_tools/modules/shared/models/field_model.dart';
@@ -13,6 +17,7 @@ import 'package:sunflower_tools/modules/shared/models/stone_model.dart';
 import 'package:sunflower_tools/modules/shared/models/sunstone_model.dart';
 import 'package:sunflower_tools/modules/shared/models/tree_model.dart';
 import 'package:sunflower_tools/modules/shared/models/iron_model.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 class GroupedController extends GetxController {
   List<FieldModel> fields = [];
@@ -26,6 +31,21 @@ class GroupedController extends GetxController {
   List<SunstoneGroup> groupedSunstones = [];
   List<FruitPatchGroup> groupedFruitPatches = [];
   List<FlowerBedGroup> groupedFlowerBeds = [];
+
+  void createNotification(String name, int earliestTime, growName) {
+    if (tz.TZDateTime.now(LocationsConstants.saoPaulo).isBefore(
+        addCooldownWithTimezone(earliestTime,
+            getCropGrowTime(growName.toLowerCase()), 'America/Sao_Paulo'))) {
+      // Chama a função para disparar a notificação quando o cooldown terminar
+      NotificationService().showScheduleNotification(
+          name,
+          "$name Ready!",
+          addCooldownWithTimezone(
+              earliestTime,
+              getCropGrowTime(growName.toLowerCase()),
+              'America/Sao_Paulo')); // Agendando a notificação para o momento em que o cooldown zerar
+    }
+  }
 
   // Função genérica para agrupar itens.
   void createGroupedItems<T>({
@@ -62,25 +82,54 @@ class GroupedController extends GetxController {
     List groupedItems = convertMapToList(itemMap);
     if (T == FieldModel) {
       groupedCrops = groupedItems as List<CropGroup>;
+      for (var crop in groupedCrops) {
+        createNotification(crop.name, crop.earliestPlantedAt!, crop.name);
+      }
     } else if (T == TreeModel) {
       groupedTrees = groupedItems as List<TreeGroup>;
+      for (var tree in groupedTrees) {
+        createNotification('Tree', tree.earliestChoppedAt!, 'tree');
+      }
     } else if (T == StoneModel) {
       groupedStones = groupedItems as List<StoneGroup>;
+      for (var stone in groupedStones) {
+        createNotification('Stone', stone.earliestMinedAt!, 'stone');
+      }
     } else if (T == IronModel) {
       groupedIrons = groupedItems as List<IronGroup>;
+      for (var iron in groupedIrons) {
+        createNotification('Iron', iron.earliestMinedAt!, 'iron');
+      }
     } else if (T == GoldModel) {
       groupedGolds = groupedItems as List<GoldGroup>;
+      for (var gold in groupedGolds) {
+        createNotification('Gold', gold.earliestMinedAt, 'gold');
+      }
     } else if (T == CrimstoneModel) {
       groupedCrimstones = groupedItems as List<CrimstoneGroup>;
+      for (var crimstone in groupedCrimstones) {
+        createNotification('Crimstone', crimstone.earliestMinedAt, 'crimstone');
+      }
     } else if (T == OilReserveModel) {
       groupedOils = groupedItems as List<OilReserveGroup>;
+      for (var oil in groupedOils) {
+        createNotification('Oil', oil.earliestDrilledAt, 'oil');
+      }
     } else if (T == SunstoneModel) {
       groupedSunstones = groupedItems as List<SunstoneGroup>;
+      for (var sunstone in groupedSunstones) {
+        createNotification('Sunstone', sunstone.earliestMinedAt, 'sunstone');
+      }
     } else if (T == FruitPatchModel) {
-      log(groupedItems.toString());
       groupedFruitPatches = groupedItems as List<FruitPatchGroup>;
+      for (var fruit in groupedFruitPatches) {
+        createNotification(fruit.name, fruit.earliestHarvestedAt, fruit.name);
+      }
     } else if (T == FlowerBedModel) {
       groupedFlowerBeds = groupedItems as List<FlowerBedGroup>;
+      for (var flower in groupedFlowerBeds) {
+        createNotification(flower.name, flower.earliestPlantedAt, flower.name);
+      }
     }
   }
 
@@ -445,7 +494,7 @@ class GroupedController extends GetxController {
         convertMapToList: convertFlowerBedsMapToList,
       );
     } else {
-      log('Chave flowerBeds não encontrada no JSON.');
+      log('No flower beds found in the JSON map.');
     }
   }
 

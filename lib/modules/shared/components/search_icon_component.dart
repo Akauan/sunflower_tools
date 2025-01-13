@@ -23,11 +23,10 @@ class SearchIconComponent extends StatelessWidget {
       child: IconButton(
         onPressed: enabled!
             ? () {
-                NotificationService.showInstantNotification('title', 'body');
-                DateTime Teste = DateTime.now().add(Duration(seconds: 5));
-                NotificationService.showScheduleNotification(
-                    'Programado', 'body', Teste);
-
+                // NotificationService.showInstantNotification('title', 'body');
+                // DateTime Teste = DateTime.now().add(Duration(seconds: 5));
+                NotificationService notificationService = NotificationService();
+                notificationService.showActiveNotifications(context);
                 // make showSearch true or false
                 if (showSearch.value == true) {
                   clearList();

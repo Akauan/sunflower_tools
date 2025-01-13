@@ -1,12 +1,17 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart'; // Imports the Flutter library.
 import 'package:get/get.dart'; // Imports the GetX library for state management.
 import 'package:sunflower_tools/modules/shared/components/expansion_tile_component.dart'; // Imports the ExpansionTile component.
 import 'package:sunflower_tools/modules/shared/components/text_component.dart'; // Imports the TextComponent.
+import 'package:sunflower_tools/modules/shared/config/locations.dart';
+import 'package:sunflower_tools/modules/shared/config/notification_service.dart';
 import 'package:sunflower_tools/modules/shared/constants/image_way_constants.dart';
 import 'package:sunflower_tools/modules/shared/constants/size_constants.dart'; // Imports general constants.
 import 'package:sunflower_tools/modules/shared/config/cooldown_controller.dart'; // Imports the CooldownController.
 import 'package:sunflower_tools/modules/shared/config/timer.dart';
 import 'package:sunflower_tools/modules/shared/theme/theme.dart'; // Imports the Theme.
+import 'package:timezone/timezone.dart' as tz;
 
 class GenericTileComponent<T> extends StatelessWidget {
   final T item; // Generic item to be displayed.
@@ -46,7 +51,8 @@ class GenericTileComponent<T> extends StatelessWidget {
 
     // Start the cooldown if it's not active.
     if (!cooldownController.isCooldownActive.value) {
-      cooldownController.startCooldown(cooldown);
+      cooldownController.startCooldown(
+          cooldown, title); // Pass title to be used in notification
     }
 
     return Obx(

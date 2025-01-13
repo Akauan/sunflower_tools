@@ -1,5 +1,6 @@
-import 'dart:async'; // Imports the async library to use the Timer.
-import 'package:get/get.dart'; // Imports the GetX library for state management.
+import 'dart:async';
+import 'dart:developer';
+import 'package:get/get.dart';
 
 class CooldownController extends GetxController {
   var cooldownTime =
@@ -9,9 +10,8 @@ class CooldownController extends GetxController {
   Timer? _timer; // Variable to store the Timer.
 
   // Function to start the cooldown with a specific time in seconds.
-  void startCooldown(int cooldown) {
+  void startCooldown(int cooldown, String itemTitle) {
     if (isCooldownActive.value) return;
-    // If the cooldown is already active, exit the function.
 
     // Set the cooldown time, ensuring it is not negative.
     cooldownTime.value = cooldown < 0 ? 0 : cooldown;
