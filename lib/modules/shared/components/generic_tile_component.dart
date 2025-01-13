@@ -65,7 +65,7 @@ class GenericTileComponent<T> extends StatelessWidget {
                 '0s'
             ? 'assets/images/png/ui/sandtimer.png'
             : 'assets/images/png/ui/confirm.png',
-        subtittleTile: 'Amount: ${amount.toStringAsFixed(2)}',
+        subtittleTile: ' ${amount.toStringAsFixed(2)}',
         enabled: true,
         child: Column(
           children: [
