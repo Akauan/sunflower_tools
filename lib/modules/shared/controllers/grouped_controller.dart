@@ -226,7 +226,7 @@ class GroupedController extends GetxController {
     }
 
     // Atualiza o tempo se o item atual foi processado mais tarde.
-    if (time > group['time']) {
+    if (time < group['time']) {
       group['time'] = time;
     }
   }
@@ -281,6 +281,7 @@ class GroupedController extends GetxController {
         amount: tree['amount'],
         quantityGroup: tree['quantityGroup'],
         quantitiesWithValues: tree['quantitiesWithValues'],
+        reward: tree['reward'],
         earliestChoppedAt: tree['time'],
       );
     }).toList();
