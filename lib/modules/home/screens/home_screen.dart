@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
@@ -102,6 +104,7 @@ class HomePageState extends State<HomePage> {
                     );
                   } else if (snapshot.connectionState ==
                       ConnectionState.waiting) {
+                    log('Loading...');
                     return ContainerComponent(
                       constraints: constraints,
                       child: Padding(

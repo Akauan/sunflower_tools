@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:get/get.dart';
 import 'package:sunflower_tools/modules/shared/config/interceptor.dart';
@@ -33,19 +34,29 @@ class FarmService {
       StreamController<int>.broadcast();
 
   // Start the periodic task and return a Stream
+  // Atualize o método `startPeriodicTask` para garantir que ele seja robusto:
+
   Stream<int> startPeriodicTask(int farmID) {
-    // Perform initial fetch and emit the status code
+    // Perform the initial fetch and emit the status code
     performInitialFetchIfNeeded(farmID).then((statusCode) {
+      log('Initial fetch status code: $statusCode');
       streamController
           .add(statusCode); // Emit the initial data after the first fetch
+    }).catchError((error) {
+      log('Error during initial fetch: $error');
+      streamController.add(200); // Caso haja erro, emitimos 200 como fallback
     });
 
-    // Start a periodic task to emit data every minute
-    _timer =
-        Timer.periodic(Duration(minutes: intervalMinutes.value), (timer) async {
-      final statusCode = await getData(farmID);
-      streamController
-          .add(statusCode); // Emit the status code whenever data is fetched
+    // Start the periodic task to emit data every minute
+    _timer = Timer.periodic(Duration(minutes: 1), (timer) async {
+      try {
+        final statusCode = await getData(farmID);
+        streamController
+            .add(statusCode); // Emit the status code whenever data is fetched
+      } catch (error) {
+        log('Error during periodic task: $error');
+        streamController.add(200); // Emit 200 in case of error
+      }
     });
 
     // Return the stream for the UI to listen to
@@ -61,29 +72,54 @@ class FarmService {
   // Function to fetch data from the API
   Future<int> getData(int farmID) async {
     try {
+      log('Fetching data for farmID: $farmID');
+
       final response =
           await InterceptorConfig().dio.get('$baseUrl$module$farmID');
 
-      // If the returned code is a success, the access is granted
-      if (response.statusCode == 200) {
-        Map<String, dynamic> newData = response.data;
+      // Verifique se a resposta é válida antes de continuar
+      if (response == null) {
+        log('Error: Response is null');
+        return Future.error('No response from the server');
+      }
 
-        // Check if the new data is different from the previous data
-        if (previousData == null ||
-            previousData.toString() != newData.toString()) {
-          previousData = newData; // Update the previous data
-          await farmController.getFarm(
-              body: newData); // Update the farm controller
-          await saveLastRequestTime(); // Save the timestamp of this request
-          await LocalSecureData.saveSecureData(
-              farmDataKey, jsonEncode(response.data)); // Save farm data
+      // Verifique se statusCode está presente e é válido
+      if (response.statusCode == null) {
+        log('Error: statusCode is null');
+        return Future.error('Invalid status code (null)');
+      }
+
+      log('Response received. Status code: ${response.statusCode}');
+
+      // Se a resposta for um sucesso (statusCode 200)
+      if (response.statusCode == 200) {
+        if (response.data != null) {
+          Map<String, dynamic> newData = response.data;
+
+          // Verifique se os dados são diferentes dos dados anteriores
+          if (previousData == null ||
+              previousData.toString() != newData.toString()) {
+            previousData = newData; // Atualizar os dados anteriores
+            await farmController.getFarm(
+                body: newData); // Atualizar o farmController com os novos dados
+            await saveLastRequestTime(); // Salvar o timestamp da solicitação
+            await LocalSecureData.saveSecureData(farmDataKey,
+                jsonEncode(response.data)); // Salvar os dados do farm
+          }
+        } else {
+          log('Error: Response data is null');
+          return Future.error('Response data is null');
         }
       } else {
-        return Future.error(response.data);
+        log('Error: Received an unexpected status code: ${response.statusCode}');
+        return Future.error('Unexpected status code: ${response.statusCode}');
       }
-      return response.statusCode;
+
+      return response.statusCode ??
+          500; // Retorna o statusCode, ou 500 se for nulo.
     } catch (error) {
-      return Future.error(error);
+      log('Error occurred: ${error.toString()}');
+      return Future.error(error.toString());
     }
   }
 
@@ -104,7 +140,8 @@ class FarmService {
       final int elapsedSeconds = (currentTime - lastRequestTimestamp) ~/ 1000;
 
       // Check if the elapsed time since the last request is less than 10 seconds
-      if (elapsedSeconds < 10) {
+      if (elapsedSeconds < 15) {
+        log('Elapsed time: $elapsedSeconds seconds');
         return 200; // Return success status code without making a new request
       }
     }

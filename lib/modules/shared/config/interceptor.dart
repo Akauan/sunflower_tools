@@ -108,11 +108,11 @@ class InterceptorConfig {
 
   // Implementing the snackbar message to show the error message, requiring the message to be shown
   getx.SnackbarController errorSnackBarCustom(
-      {required String menssage, Color colorText = ThemeColor.primaryColor}) {
+      {required String message, Color colorText = ThemeColor.primaryColor}) {
     // Settings of the snackbar message with the required message
     return getx.Get.snackbar(
       'Ops!',
-      menssage,
+      message,
       showProgressIndicator: false,
       colorText: colorText,
       duration: const Duration(seconds: 3),
@@ -147,21 +147,19 @@ class InterceptorConfig {
   ) {
     if (code == '400') {
       errorSnackBarCustom(
-          menssage:
-              "Problemas no envio dos dados. Entre em contato com o suporte.");
+          message: "Data submission issues. Please contact support.");
     } else if (code == '401') {
-      errorSnackBarCustom(menssage: "Usuário ou senha incorretos.");
+      errorSnackBarCustom(message: "Incorrect username or password.");
     } else if (code == '200') {
-      errorSnackBarCustom(menssage: "usuario conectado.");
+      errorSnackBarCustom(message: "User connected.");
     } else if (code == '500') {
       errorSnackBarCustom(
-          menssage: "Servidor indisponível. Entre em contato com o suporte.");
-    } else if (code == "desconectado") {
+          message: "Server unavailable. Please contact support.");
+    } else if (code == "disconnected") {
       errorSnackBarCustom(
-          menssage: "Você está desconectado. Tente novamente mais tarde.");
+          message: "You are disconnected. Please try again later.");
     } else {
-      errorSnackBarCustom(
-          menssage: "Erro desconhecido. Por favor, contate o suporte.");
+      errorSnackBarCustom(message: "Unknown error. Please contact support.");
     }
   }
 
@@ -169,25 +167,25 @@ class InterceptorConfig {
     try {
       if (data.runtimeType == String) {
         errorSnackBarCustom(
-            menssage: "Algo deu errado. Entre em contato com o suporte.");
+            message: "Algo deu errado. Entre em contato com o suporte.");
       } else if (data.runtimeType == List<dynamic>) {
-        errorSnackBarCustom(menssage: data[0]);
+        errorSnackBarCustom(message: data[0]);
       } else {
         data.forEach((key, value) {
           if (value.runtimeType == List) {
             for (var element in value) {
               errorSnackBarCustom(
-                menssage: '$key $element',
+                message: '$key $element',
               );
             }
           } else {
-            errorSnackBarCustom(menssage: value.toString());
+            errorSnackBarCustom(message: value.toString());
           }
         });
       }
     } catch (e) {
       errorSnackBarCustom(
-          menssage: 'Serviço indisponível. Tente novamente mais tarde.');
+          message: 'Serviço indisponível. Tente novamente mais tarde.');
     }
   }
 }
