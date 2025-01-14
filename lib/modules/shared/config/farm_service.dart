@@ -1,7 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
-
 import 'package:get/get.dart';
 import 'package:sunflower_tools/modules/shared/config/interceptor.dart';
 import 'package:sunflower_tools/modules/shared/config/local_secure_data.dart';
@@ -59,24 +57,18 @@ class FarmService {
   // Function to fetch data from the API
   Future<int> getData(int farmID) async {
     try {
-      log('Fetching data for farmID: $farmID');
-
       final response =
           await InterceptorConfig().dio.get('$baseUrl$module$farmID');
 
       // Verifique se a resposta é válida antes de continuar
       if (response == null) {
-        log('Error: Response is null');
         return Future.error('No response from the server');
       }
 
       // Verifique se statusCode está presente e é válido
       if (response.statusCode == null) {
-        log('Error: statusCode is null');
         return Future.error('Invalid status code (null)');
       }
-
-      log('Response received. Status code: ${response.statusCode}');
 
       // Se a resposta for um sucesso (statusCode 200)
       if (response.statusCode == 200) {
@@ -94,18 +86,15 @@ class FarmService {
                 jsonEncode(response.data)); // Salvar os dados do farm
           }
         } else {
-          log('Error: Response data is null');
           return Future.error('Response data is null');
         }
       } else {
-        log('Error: Received an unexpected status code: ${response.statusCode}');
         return Future.error('Unexpected status code: ${response.statusCode}');
       }
 
       return response.statusCode ??
           500; // Retorna o statusCode, ou 500 se for nulo.
     } catch (error) {
-      log('Error occurred: ${error.toString()}');
       return Future.error(error.toString());
     }
   }
@@ -128,7 +117,6 @@ class FarmService {
 
       // Check if the elapsed time since the last request is less than 10 seconds
       if (elapsedSeconds < 10) {
-        log('Elapsed time: $elapsedSeconds seconds');
         return 200; // Return success status code without making a new request
       }
     }
