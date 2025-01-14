@@ -41,7 +41,8 @@ class FarmService {
     });
 
     // Start a periodic task to emit data every minute
-    _timer = Timer.periodic(Duration(minutes: 1), (timer) async {
+    _timer =
+        Timer.periodic(Duration(minutes: intervalMinutes.value), (timer) async {
       final statusCode = await getData(farmID);
       streamController
           .add(statusCode); // Emit the status code whenever data is fetched

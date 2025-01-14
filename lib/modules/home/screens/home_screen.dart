@@ -52,7 +52,8 @@ class HomePageState extends State<HomePage> {
 
   // Função para recarregar os dados
   Future<void> reloadData() async {
-    farmService.startPeriodicTask(int.parse(_loginController.userLandId.text));
+    farmService.performInitialFetchIfNeeded(
+        int.parse(_loginController.userLandId.text));
   }
 
   @override

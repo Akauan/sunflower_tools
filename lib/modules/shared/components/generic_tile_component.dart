@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart'; // Imports the Flutter library.
 import 'package:get/get.dart'; // Imports the GetX library for state management.
 import 'package:sunflower_tools/modules/shared/components/expansion_tile_component.dart'; // Imports the ExpansionTile component.
@@ -51,8 +49,6 @@ class GenericTileComponent<T> extends StatelessWidget {
       cooldownController.startCooldown(
           cooldown, title); // Pass title to be used in notification
     }
-
-    log(rewards.toString());
 
     return Obx(
       () => ExpansionTileComponent(

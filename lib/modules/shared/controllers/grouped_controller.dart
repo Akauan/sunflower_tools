@@ -456,7 +456,7 @@ class GroupedController extends GetxController {
       items: fruitPatches,
       getName: (fruitPatch) => fruitPatch.fruit!.name!,
       getAmount: (fruitPatch) => fruitPatch.fruit!.amount!,
-      getTime: (fruitPatch) => fruitPatch.fertiliser != null
+      getTime: (fruitPatch) => fruitPatch.fruit!.harvestedAt != 0
           ? fruitPatch.fruit!.harvestedAt!
           : fruitPatch.fruit!.plantedAt!,
       updateGroup: updateGroup,
