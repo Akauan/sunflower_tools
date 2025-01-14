@@ -110,8 +110,8 @@ class _LoginPageScreenState extends State<LoginPageScreen> {
                               return "This field is required";
                             }
                             int intValue = int.tryParse(value) ?? 0;
-                            if (intValue < 10) {
-                              return "The minimum value is 10";
+                            if (intValue < 1) {
+                              return "The minimum value is 1";
                             }
                             return null;
                           },

@@ -1,18 +1,17 @@
-import 'dart:async'; // Import the async library to use Timer.
-import 'dart:convert'; // Import for jsonDecode function.
-import 'package:get/get.dart'; // Import the GetX library for state management.
-import 'package:sunflower_tools/modules/shared/controllers/farm_controller.dart'; // Import the farm controller.
-import 'package:sunflower_tools/modules/shared/config/interceptor.dart'; // Import the interceptor configuration.
-import 'package:sunflower_tools/modules/shared/config/local_secure_data.dart'; // Import the local secure data.
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:get/get.dart';
+import 'package:sunflower_tools/modules/shared/config/interceptor.dart';
+import 'package:sunflower_tools/modules/shared/config/local_secure_data.dart';
+import 'package:sunflower_tools/modules/shared/controllers/farm_controller.dart';
 
 class FarmService {
   final FarmController farmController = Get.find<FarmController>();
 
   // Set [baseUrl] with the API IP
   final String baseUrl = const String.fromEnvironment('BASEURL');
-
-  // The path for authentication
-  final String module = 'farms/';
+  final String module = 'farms/'; // The path for the farm module
 
   // Timer for periodic execution
   Timer? _timer;
@@ -29,27 +28,33 @@ class FarmService {
   // Key for storing the farm data
   final String farmDataKey = 'farmData';
 
-  // Start the periodic task
-  Future<int> startPeriodicTask(int farmID) async {
-    // Cancel any existing timer
-    _timer?.cancel();
+  // Stream controller for emitting updates
+  final StreamController<int> streamController =
+      StreamController<int>.broadcast();
 
-    // Perform initial fetch and get the status code if needed
-    final int initialStatusCode = await performInitialFetchIfNeeded(farmID);
-
-    // Start a new periodic timer
-    _timer =
-        Timer.periodic(Duration(minutes: intervalMinutes.value), (timer) async {
-      await getData(farmID); // Call the getData function periodically
+  // Start the periodic task and return a Stream
+  Stream<int> startPeriodicTask(int farmID) {
+    // Perform initial fetch and emit the status code
+    performInitialFetchIfNeeded(farmID).then((statusCode) {
+      streamController
+          .add(statusCode); // Emit the initial data after the first fetch
     });
 
-    // Return the status code from the initial fetch
-    return initialStatusCode;
+    // Start a periodic task to emit data every minute
+    _timer = Timer.periodic(Duration(minutes: 1), (timer) async {
+      final statusCode = await getData(farmID);
+      streamController
+          .add(statusCode); // Emit the status code whenever data is fetched
+    });
+
+    // Return the stream for the UI to listen to
+    return streamController.stream;
   }
 
   // Stop the periodic task
   void stopPeriodicTask() {
     _timer?.cancel(); // Cancel the existing timer
+    streamController.close(); // Close the stream when no longer needed
   }
 
   // Function to fetch data from the API
@@ -73,7 +78,7 @@ class FarmService {
               farmDataKey, jsonEncode(response.data)); // Save farm data
         }
       } else {
-        Future.error(response.data);
+        return Future.error(response.data);
       }
       return response.statusCode;
     } catch (error) {

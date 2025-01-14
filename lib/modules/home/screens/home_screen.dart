@@ -34,7 +34,6 @@ class HomePage extends StatefulWidget {
 }
 
 class HomePageState extends State<HomePage> {
-  final Rx<Future<int>?> _inventoryList = Rx<Future<int>?>(null);
   final FarmService farmService = FarmService();
   final HomeController _homeController = Get.find<HomeController>();
   final LoginController _loginController = Get.find<LoginController>();
@@ -48,22 +47,12 @@ class HomePageState extends State<HomePage> {
     farmService.intervalMinutes.value =
         int.parse(_loginController.refreshTime.text);
     // Inicia a tarefa periódica para buscar dados
-    _inventoryList.value = farmService
-        .startPeriodicTask(int.parse(_loginController.userLandId.text));
-    // Fetch initial data
-  }
-
-  @override
-  void dispose() {
-    // Para a tarefa periódica quando a página for descartada
-    farmService.stopPeriodicTask();
-    super.dispose();
+    farmService.startPeriodicTask(int.parse(_loginController.userLandId.text));
   }
 
   // Função para recarregar os dados
   Future<void> reloadData() async {
-    _inventoryList.value = farmService.performInitialFetchIfNeeded(
-        int.parse(_loginController.userLandId.text));
+    farmService.startPeriodicTask(int.parse(_loginController.userLandId.text));
   }
 
   @override
@@ -72,25 +61,23 @@ class HomePageState extends State<HomePage> {
       builder: (context, constraints) {
         return SafeArea(
           child: Scaffold(
-            appBar: AppBarComponent(
-              name: 'Farm Info',
-              actions: [
-                // Button to show the search field
-                SearchIconComponent(
-                  showSearch: _homeController.showSearch,
-                  clearList: _homeController.clearFilter,
-                  enabled: _homeController.searchEnabled.value,
-                ),
-              ],
-            ),
-            drawer: const DrawerComponent(),
-            drawerEnableOpenDragGesture: true,
-            body: Obx(() {
-              return FutureBuilder<int>(
-                future: _inventoryList.value,
+              appBar: AppBarComponent(
+                name: 'Farm Info',
+                actions: [
+                  // Button to show the search field
+                  SearchIconComponent(
+                    showSearch: _homeController.showSearch,
+                    clearList: _homeController.clearFilter,
+                    enabled: _homeController.searchEnabled.value,
+                  ),
+                ],
+              ),
+              drawer: const DrawerComponent(),
+              drawerEnableOpenDragGesture: true,
+              body: StreamBuilder<int>(
+                stream: farmService.streamController.stream,
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
-                    // Disables the search button and shows a retry button
                     return ContainerComponent(
                       constraints: constraints,
                       child: Center(
@@ -126,9 +113,7 @@ class HomePageState extends State<HomePage> {
                             decoration: const BoxDecoration(
                                 color: ThemeColor.whiteColor),
                             child: Center(
-                              child: Lottie.asset(
-                                'assets/jsons/loading.json',
-                              ),
+                              child: Lottie.asset('assets/jsons/loading.json'),
                             ),
                           ),
                         ),
@@ -147,9 +132,8 @@ class HomePageState extends State<HomePage> {
                             children: [
                               Expanded(
                                 child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(
-                                    kRadiusMedium,
-                                  ),
+                                  borderRadius:
+                                      BorderRadius.circular(kRadiusMedium),
                                   child: ItemListComponent(
                                     onRefresh: reloadData,
                                     items: [
@@ -174,27 +158,24 @@ class HomePageState extends State<HomePage> {
                                             {'type': 'gold', 'data': item},
                                       ),
                                       ...groupedController.groupedCrimstones
-                                          .map(
-                                        (item) =>
-                                            {'type': 'crimstone', 'data': item},
-                                      ),
+                                          .map((item) => {
+                                                'type': 'crimstone',
+                                                'data': item
+                                              }),
                                       ...groupedController.groupedSunstones.map(
-                                        (item) =>
-                                            {'type': 'sunstone', 'data': item},
-                                      ),
+                                          (item) => {
+                                                'type': 'sunstone',
+                                                'data': item
+                                              }),
                                       ...groupedController.groupedOils.map(
                                         (item) => {'type': 'oil', 'data': item},
                                       ),
                                       ...groupedController.groupedFruitPatches
-                                          .map(
-                                        (item) =>
-                                            {'type': 'fruit', 'data': item},
-                                      ),
+                                          .map((item) =>
+                                              {'type': 'fruit', 'data': item}),
                                       ...groupedController.groupedFlowerBeds
-                                          .map(
-                                        (item) =>
-                                            {'type': 'flower', 'data': item},
-                                      ),
+                                          .map((item) =>
+                                              {'type': 'flower', 'data': item}),
                                     ],
                                     itemBuilder: (item) {
                                       final componentsMap = {
@@ -238,9 +219,7 @@ class HomePageState extends State<HomePage> {
                     );
                   }
                 },
-              );
-            }),
-          ),
+              )),
         );
       },
     );
