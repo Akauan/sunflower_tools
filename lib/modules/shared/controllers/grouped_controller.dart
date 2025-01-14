@@ -32,7 +32,8 @@ class GroupedController extends GetxController {
   List<FruitPatchGroup> groupedFruitPatches = [];
   List<FlowerBedGroup> groupedFlowerBeds = [];
 
-  RxList inventoryListItems = [].obs;
+  RxList<Map<String, dynamic>> inventoryListItems =
+      <Map<String, dynamic>>[].obs;
 
   void createInventoryListItems() {
     inventoryListItems.clear();
@@ -68,6 +69,80 @@ class GroupedController extends GetxController {
       groupedFlowerBeds.map((item) => {'type': 'flower', 'data': item}),
     );
   }
+
+  // void sortInventoryListItems(List<Map<String, dynamic>> inventoryListItems) {
+  //   inventoryListItems.sort((a, b) {
+  //     final typeA = a['type'];
+  //     final typeB = b['type'];
+
+  //     // Obter os tempos reais para comparação
+  //     int? timeA = _getRealTimeValue(a['data'], typeA);
+  //     int? timeB = _getRealTimeValue(b['data'], typeB);
+
+  //     // Ordenar por tempo crescente (nulls por último)
+  //     if (timeA == null && timeB == null) return 0;
+  //     if (timeA == null) return 1;
+  //     if (timeB == null) return -1;
+  //     return timeA.compareTo(timeB);
+  //   });
+  // }
+
+  // int? _getRealTimeValue(dynamic data, String type) {
+  //   int? baseTime;
+
+  //   // Obter o tempo base (earliestPlantedAt, earliestMinedAt, etc.)
+  //   switch (type) {
+  //     case 'crop':
+  //       baseTime = (data as CropGroup).earliestPlantedAt;
+  //       break;
+  //     case 'stone':
+  //       baseTime = (data as StoneGroup).earliestMinedAt;
+  //       break;
+  //     case 'tree':
+  //       baseTime = (data as TreeGroup).earliestChoppedAt; // Supondo que exista
+  //       break;
+  //     case 'iron':
+  //       baseTime = (data as IronGroup).earliestMinedAt; // Supondo que exista
+  //       break;
+  //     case 'gold':
+  //       baseTime = (data as GoldGroup).earliestMinedAt; // Supondo que exista
+  //       break;
+  //     case 'crimstone':
+  //       baseTime =
+  //           (data as CrimstoneGroup).earliestMinedAt; // Supondo que exista
+  //       break;
+  //     case 'oil':
+  //       baseTime =
+  //           (data as OilReserveGroup).earliestDrilledAt; // Supondo que exista
+  //       break;
+  //     case 'sunstone':
+  //       baseTime =
+  //           (data as SunstoneGroup).earliestMinedAt; // Supondo que exista
+  //       break;
+  //     case 'fruit':
+  //       baseTime =
+  //           (data as FruitPatchGroup).earliestHarvestedAt; // Supondo que exista
+  //       break;
+  //     case 'flower':
+  //       baseTime =
+  //           (data as FlowerBedGroup).earliestPlantedAt; // Supondo que exista
+  //       break;
+  //     default:
+  //       return null;
+  //   }
+
+  //   // Se baseTime for nulo, retorne nulo
+  //   if (baseTime == null) return null;
+
+  //   // Adicionar o tempo adicional, se aplicável
+  //   int growTime = 0;
+  //   if (type == 'crop') {
+  //     growTime = getCropGrowTime((data as CropGroup).name);
+  //   }
+
+  //   // Retornar a soma do tempo base com o tempo adicional
+  //   return baseTime + growTime;
+  // }
 
   void createNotification(String name, int earliestTime, growName) {
     if (tz.TZDateTime.now(LocationsConstants.saoPaulo).isBefore(
@@ -174,6 +249,7 @@ class GroupedController extends GetxController {
     int time;
 
     createInventoryListItems();
+    // sortInventoryListItems(inventoryListItems);
 
     if (item is FieldModel && item.crop != null) {
       amount = item.crop!.amount!;
@@ -235,7 +311,7 @@ class GroupedController extends GetxController {
       time = item.oil!.drilledAt!;
     } else if (item is FruitPatchModel && item.fruit != null) {
       amount = item.fruit!.amount!;
-      time = item.fertiliser != null
+      time = item.fruit!.harvestedAt != 0
           ? item.fruit!.harvestedAt!
           : item.fruit!.plantedAt!;
     } else if (item is FlowerBedModel && item.flower != null) {
