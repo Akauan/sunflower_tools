@@ -29,44 +29,31 @@ class FarmService {
   // Key for storing the farm data
   final String farmDataKey = 'farmData';
 
-  // Stream controller for emitting updates
-  final StreamController<int> streamController =
-      StreamController<int>.broadcast();
+  final Rx<Future<int>?> listInventory = Rx<Future<int>?>(null);
 
   // Start the periodic task and return a Stream
   // Atualize o método `startPeriodicTask` para garantir que ele seja robusto:
 
-  Stream<int> startPeriodicTask(int farmID) {
-    // Perform the initial fetch and emit the status code
-    performInitialFetchIfNeeded(farmID).then((statusCode) {
-      log('Initial fetch status code: $statusCode');
-      streamController
-          .add(statusCode); // Emit the initial data after the first fetch
-    }).catchError((error) {
-      log('Error during initial fetch: $error');
-      streamController.add(200); // Caso haja erro, emitimos 200 como fallback
+  Future<int> startPeriodicTask(int farmID) async {
+    // Cancel any existing timer
+    _timer?.cancel();
+
+    // Perform initial fetch and get the status code if needed
+    final int initialStatusCode = await performInitialFetchIfNeeded(farmID);
+
+    // Start a new periodic timer
+    _timer =
+        Timer.periodic(Duration(minutes: intervalMinutes.value), (timer) async {
+      await getData(farmID); // Call the getData function periodically
     });
 
-    // Start the periodic task to emit data every minute
-    _timer = Timer.periodic(Duration(minutes: 1), (timer) async {
-      try {
-        final statusCode = await getData(farmID);
-        streamController
-            .add(statusCode); // Emit the status code whenever data is fetched
-      } catch (error) {
-        log('Error during periodic task: $error');
-        streamController.add(200); // Emit 200 in case of error
-      }
-    });
-
-    // Return the stream for the UI to listen to
-    return streamController.stream;
+    // Return the status code from the initial fetch
+    return initialStatusCode;
   }
 
   // Stop the periodic task
   void stopPeriodicTask() {
     _timer?.cancel(); // Cancel the existing timer
-    streamController.close(); // Close the stream when no longer needed
   }
 
   // Function to fetch data from the API
@@ -140,7 +127,7 @@ class FarmService {
       final int elapsedSeconds = (currentTime - lastRequestTimestamp) ~/ 1000;
 
       // Check if the elapsed time since the last request is less than 10 seconds
-      if (elapsedSeconds < 15) {
+      if (elapsedSeconds < 10) {
         log('Elapsed time: $elapsedSeconds seconds');
         return 200; // Return success status code without making a new request
       }

@@ -41,6 +41,8 @@ class HomePageState extends State<HomePage> {
   final LoginController _loginController = Get.find<LoginController>();
   final GroupedController groupedController = Get.find<GroupedController>();
 
+  final Rx<Future<int>?> _listInventory = Rx<Future<int>?>(null);
+
   @override
   void initState() {
     super.initState();
@@ -49,13 +51,15 @@ class HomePageState extends State<HomePage> {
     farmService.intervalMinutes.value =
         int.parse(_loginController.refreshTime.text);
     // Inicia a tarefa periódica para buscar dados
-    farmService.startPeriodicTask(int.parse(_loginController.userLandId.text));
+    _listInventory.value = farmService
+        .startPeriodicTask(int.parse(_loginController.userLandId.text));
   }
 
-  // Função para recarregar os dados
   Future<void> reloadData() async {
-    farmService.performInitialFetchIfNeeded(
-        int.parse(_loginController.userLandId.text));
+    // Realiza a fetch inicial dos dados
+    _listInventory.value = farmService.performInitialFetchIfNeeded(
+      int.parse(_loginController.userLandId.text),
+    );
   }
 
   @override
@@ -77,151 +81,119 @@ class HomePageState extends State<HomePage> {
               ),
               drawer: const DrawerComponent(),
               drawerEnableOpenDragGesture: true,
-              body: StreamBuilder<int>(
-                stream: farmService.streamController.stream,
-                builder: (context, snapshot) {
-                  if (snapshot.hasError) {
-                    return ContainerComponent(
-                      constraints: constraints,
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const TextComponent(
-                              text: 'An error occurred. Please try again!',
-                              size: kFontSizeMedium,
-                              minFontSize: kFontSizeMedium,
-                              color: ThemeColor.greyColor,
-                            ),
-                            const SizedBox(height: 20),
-                            ElevatedButton(
-                              onPressed: reloadData,
-                              child: const Text('Reload'),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  } else if (snapshot.connectionState ==
-                      ConnectionState.waiting) {
-                    log('Loading...');
-                    return ContainerComponent(
-                      constraints: constraints,
-                      child: Padding(
-                        padding: const EdgeInsets.all(kPaddingStandard),
-                        child: ClipRRect(
-                          borderRadius: const BorderRadius.all(
-                            Radius.circular(kRadiusMedium),
-                          ),
-                          child: DecoratedBox(
-                            decoration: const BoxDecoration(
-                                color: ThemeColor.whiteColor),
-                            child: Center(
-                              child: Lottie.asset('assets/jsons/loading.json'),
+              body: Obx(
+                () {
+                  // Isso agora monitora a execução do Future e atualiza quando `_listInventory` mudar
+                  return FutureBuilder(
+                    future: _listInventory.value,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                        log('Error: ${snapshot.error}');
+                        return ContainerComponent(
+                          constraints: constraints,
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const TextComponent(
+                                  text: 'An error occurred. Please try again!',
+                                  size: kFontSizeMedium,
+                                  minFontSize: kFontSizeMedium,
+                                  color: ThemeColor.greyColor,
+                                ),
+                                const SizedBox(height: 20),
+                                ElevatedButton(
+                                  onPressed: reloadData,
+                                  child: const Text('Reload'),
+                                ),
+                              ],
                             ),
                           ),
-                        ),
-                      ),
-                    );
-                  } else {
-                    return ContainerComponent(
-                      constraints: constraints,
-                      child: Padding(
-                        padding: const EdgeInsets.all(kPaddingStandard),
-                        child: ClipRRect(
-                          borderRadius: const BorderRadius.all(
-                            Radius.circular(kRadiusMedium),
-                          ),
-                          child: Column(
-                            children: [
-                              Expanded(
-                                child: ClipRRect(
-                                  borderRadius:
-                                      BorderRadius.circular(kRadiusMedium),
-                                  child: ItemListComponent(
-                                    onRefresh: reloadData,
-                                    items: [
-                                      ...groupedController.groupedCrops.map(
-                                        (item) =>
-                                            {'type': 'crop', 'data': item},
-                                      ),
-                                      ...groupedController.groupedTrees.map(
-                                        (item) =>
-                                            {'type': 'tree', 'data': item},
-                                      ),
-                                      ...groupedController.groupedStones.map(
-                                        (item) =>
-                                            {'type': 'stone', 'data': item},
-                                      ),
-                                      ...groupedController.groupedIrons.map(
-                                        (item) =>
-                                            {'type': 'iron', 'data': item},
-                                      ),
-                                      ...groupedController.groupedGolds.map(
-                                        (item) =>
-                                            {'type': 'gold', 'data': item},
-                                      ),
-                                      ...groupedController.groupedCrimstones
-                                          .map((item) => {
-                                                'type': 'crimstone',
-                                                'data': item
-                                              }),
-                                      ...groupedController.groupedSunstones.map(
-                                          (item) => {
-                                                'type': 'sunstone',
-                                                'data': item
-                                              }),
-                                      ...groupedController.groupedOils.map(
-                                        (item) => {'type': 'oil', 'data': item},
-                                      ),
-                                      ...groupedController.groupedFruitPatches
-                                          .map((item) =>
-                                              {'type': 'fruit', 'data': item}),
-                                      ...groupedController.groupedFlowerBeds
-                                          .map((item) =>
-                                              {'type': 'flower', 'data': item}),
-                                    ],
-                                    itemBuilder: (item) {
-                                      final componentsMap = {
-                                        'crop': (data) =>
-                                            CropTileComponent(field: data),
-                                        'tree': (data) =>
-                                            TreeTileComponent(tree: data),
-                                        'stone': (data) =>
-                                            StoneTileComponent(stone: data),
-                                        'iron': (data) =>
-                                            IronTileComponent(iron: data),
-                                        'gold': (data) =>
-                                            GoldTileComponent(gold: data),
-                                        'crimstone': (data) =>
-                                            CrimstoneTileComponent(
-                                                crimstone: data),
-                                        'sunstone': (data) =>
-                                            SunstoneTileComponent(
-                                                sunstone: data),
-                                        'oil': (data) =>
-                                            OilReserveTileComponent(
-                                                oilReserve: data),
-                                        'fruit': (data) =>
-                                            FruitPatchTileComponent(
-                                                fruitPatch: data),
-                                        'flower': (data) =>
-                                            FlowerBedTileComponent(
-                                                flowerBed: data),
-                                      };
-
-                                      return componentsMap[item['type']]!(
-                                          item['data']);
-                                    },
-                                  ),
+                        );
+                      } else if (snapshot.connectionState ==
+                          ConnectionState.waiting) {
+                        log('Loading...');
+                        return ContainerComponent(
+                          constraints: constraints,
+                          child: Padding(
+                            padding: const EdgeInsets.all(kPaddingStandard),
+                            child: ClipRRect(
+                              borderRadius: const BorderRadius.all(
+                                Radius.circular(kRadiusMedium),
+                              ),
+                              child: DecoratedBox(
+                                decoration: const BoxDecoration(
+                                    color: ThemeColor.whiteColor),
+                                child: Center(
+                                  child:
+                                      Lottie.asset('assets/jsons/loading.json'),
                                 ),
                               ),
-                            ],
+                            ),
                           ),
-                        ),
-                      ),
-                    );
-                  }
+                        );
+                      } else {
+                        return ContainerComponent(
+                          constraints: constraints,
+                          child: Padding(
+                            padding: const EdgeInsets.all(kPaddingStandard),
+                            child: ClipRRect(
+                              borderRadius: const BorderRadius.all(
+                                Radius.circular(kRadiusMedium),
+                              ),
+                              child: Column(
+                                children: [
+                                  Expanded(
+                                    child: ClipRRect(
+                                      borderRadius:
+                                          BorderRadius.circular(kRadiusMedium),
+                                      child: ItemListComponent(
+                                        onRefresh: reloadData,
+                                        items: groupedController
+                                            .inventoryListItems,
+                                        itemBuilder: (item) {
+                                          final componentsMap = {
+                                            'crop': (data) =>
+                                                CropTileComponent(field: data),
+                                            'tree': (data) =>
+                                                TreeTileComponent(tree: data),
+                                            'stone': (data) =>
+                                                StoneTileComponent(stone: data),
+                                            'iron': (data) =>
+                                                IronTileComponent(iron: data),
+                                            'gold': (data) =>
+                                                GoldTileComponent(gold: data),
+                                            'crimstone': (data) =>
+                                                CrimstoneTileComponent(
+                                                    crimstone: data),
+                                            'sunstone': (data) =>
+                                                SunstoneTileComponent(
+                                                    sunstone: data),
+                                            'oil': (data) =>
+                                                OilReserveTileComponent(
+                                                    oilReserve: data),
+                                            'fruit': (data) =>
+                                                FruitPatchTileComponent(
+                                                    fruitPatch: data),
+                                            'flower': (data) =>
+                                                FlowerBedTileComponent(
+                                                    flowerBed: data),
+                                          };
+
+                                          return componentsMap[item['type']]!(
+                                              item['data']);
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                  );
                 },
               )),
         );

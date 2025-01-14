@@ -32,6 +32,43 @@ class GroupedController extends GetxController {
   List<FruitPatchGroup> groupedFruitPatches = [];
   List<FlowerBedGroup> groupedFlowerBeds = [];
 
+  RxList inventoryListItems = [].obs;
+
+  void createInventoryListItems() {
+    inventoryListItems.clear();
+
+    inventoryListItems.addAll(
+      groupedCrops.map((item) => {'type': 'crop', 'data': item}),
+    );
+    inventoryListItems.addAll(
+      groupedTrees.map((item) => {'type': 'tree', 'data': item}),
+    );
+    inventoryListItems.addAll(
+      groupedStones.map((item) => {'type': 'stone', 'data': item}),
+    );
+    inventoryListItems.addAll(
+      groupedIrons.map((item) => {'type': 'iron', 'data': item}),
+    );
+    inventoryListItems.addAll(
+      groupedGolds.map((item) => {'type': 'gold', 'data': item}),
+    );
+    inventoryListItems.addAll(
+      groupedCrimstones.map((item) => {'type': 'crimstone', 'data': item}),
+    );
+    inventoryListItems.addAll(
+      groupedOils.map((item) => {'type': 'oil', 'data': item}),
+    );
+    inventoryListItems.addAll(
+      groupedSunstones.map((item) => {'type': 'sunstone', 'data': item}),
+    );
+    inventoryListItems.addAll(
+      groupedFruitPatches.map((item) => {'type': 'fruit', 'data': item}),
+    );
+    inventoryListItems.addAll(
+      groupedFlowerBeds.map((item) => {'type': 'flower', 'data': item}),
+    );
+  }
+
   void createNotification(String name, int earliestTime, growName) {
     if (tz.TZDateTime.now(LocationsConstants.saoPaulo).isBefore(
         addCooldownWithTimezone(earliestTime,
@@ -135,6 +172,8 @@ class GroupedController extends GetxController {
   void updateGroup(Map<String, dynamic> group, dynamic item) {
     double amount;
     int time;
+
+    createInventoryListItems();
 
     if (item is FieldModel && item.crop != null) {
       amount = item.crop!.amount!;

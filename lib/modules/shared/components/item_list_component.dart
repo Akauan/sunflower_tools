@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 
 class ItemListComponent<T> extends StatelessWidget {
@@ -14,6 +16,7 @@ class ItemListComponent<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    log(items.toString());
     return RefreshIndicator(
       onRefresh: onRefresh,
       child: ListView.builder(
