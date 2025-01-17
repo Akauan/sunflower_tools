@@ -73,80 +73,6 @@ class GroupedController extends GetxController {
     );
   }
 
-  // void sortInventoryListItems(List<Map<String, dynamic>> inventoryListItems) {
-  //   inventoryListItems.sort((a, b) {
-  //     final typeA = a['type'];
-  //     final typeB = b['type'];
-
-  //     // Obter os tempos reais para comparação
-  //     int? timeA = _getRealTimeValue(a['data'], typeA);
-  //     int? timeB = _getRealTimeValue(b['data'], typeB);
-
-  //     // Ordenar por tempo crescente (nulls por último)
-  //     if (timeA == null && timeB == null) return 0;
-  //     if (timeA == null) return 1;
-  //     if (timeB == null) return -1;
-  //     return timeA.compareTo(timeB);
-  //   });
-  // }
-
-  // int? _getRealTimeValue(dynamic data, String type) {
-  //   int? baseTime;
-
-  //   // Obter o tempo base (earliestPlantedAt, earliestMinedAt, etc.)
-  //   switch (type) {
-  //     case 'crop':
-  //       baseTime = (data as CropGroup).earliestPlantedAt;
-  //       break;
-  //     case 'stone':
-  //       baseTime = (data as StoneGroup).earliestMinedAt;
-  //       break;
-  //     case 'tree':
-  //       baseTime = (data as TreeGroup).earliestChoppedAt; // Supondo que exista
-  //       break;
-  //     case 'iron':
-  //       baseTime = (data as IronGroup).earliestMinedAt; // Supondo que exista
-  //       break;
-  //     case 'gold':
-  //       baseTime = (data as GoldGroup).earliestMinedAt; // Supondo que exista
-  //       break;
-  //     case 'crimstone':
-  //       baseTime =
-  //           (data as CrimstoneGroup).earliestMinedAt; // Supondo que exista
-  //       break;
-  //     case 'oil':
-  //       baseTime =
-  //           (data as OilReserveGroup).earliestDrilledAt; // Supondo que exista
-  //       break;
-  //     case 'sunstone':
-  //       baseTime =
-  //           (data as SunstoneGroup).earliestMinedAt; // Supondo que exista
-  //       break;
-  //     case 'fruit':
-  //       baseTime =
-  //           (data as FruitPatchGroup).earliestHarvestedAt; // Supondo que exista
-  //       break;
-  //     case 'flower':
-  //       baseTime =
-  //           (data as FlowerBedGroup).earliestPlantedAt; // Supondo que exista
-  //       break;
-  //     default:
-  //       return null;
-  //   }
-
-  //   // Se baseTime for nulo, retorne nulo
-  //   if (baseTime == null) return null;
-
-  //   // Adicionar o tempo adicional, se aplicável
-  //   int growTime = 0;
-  //   if (type == 'crop') {
-  //     growTime = getCropGrowTime((data as CropGroup).name);
-  //   }
-
-  //   // Retornar a soma do tempo base com o tempo adicional
-  //   return baseTime + growTime;
-  // }
-
   void createNotification(String name, int earliestTime, growName) {
     if (tz.TZDateTime.now(LocationsConstants.saoPaulo).isBefore(
         addCooldownWithTimezone(earliestTime,
@@ -197,9 +123,6 @@ class GroupedController extends GetxController {
     if (T == FieldModel) {
       groupedCrops = groupedItems as List<CropGroup>;
       for (var crop in groupedCrops) {
-        log(addCooldownWithTimezone(crop.earliestPlantedAt!,
-                getCropGrowTime(crop.name.toLowerCase()), 'America/Sao_Paulo')
-            .toString());
         createNotification(crop.name, crop.earliestPlantedAt!, crop.name);
       }
     } else if (T == TreeModel) {
@@ -455,283 +378,199 @@ class GroupedController extends GetxController {
     }
   }
 
-  void updateFieldsFromJson(Map<String, dynamic> jsonMap) {
-    fields = jsonMap.entries
-        .map((entry) => FieldModel.fromJson(entry.value))
-        .toList();
+  // Função genérica para atualizar e agrupar itens a partir de um mapa JSON.
+  void updateItemsFromJson<T, G>({
+    required Map<String, dynamic> jsonMap,
+    required T Function(Map<String, dynamic>) fromJson,
+    required G Function(Map<String, dynamic>) fromGroupMap,
+    required String Function(T) getName,
+    required double Function(T) getAmount,
+    required int Function(T) getTime,
+  }) {
+    log(jsonMap.toString());
+    List<T> items =
+        jsonMap.entries.map((entry) => fromJson(entry.value)).toList();
 
     createGroupedItems(
-      items: fields,
+      items: items,
+      getName: getName,
+      getAmount: getAmount,
+      getTime: getTime,
+      updateGroup: updateGroup,
+      convertMapToList: (map) => map.values
+          .map((value) => fromGroupMap(value as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+
+  void updateFieldsFromJson(Map<String, dynamic> jsonMap) {
+    updateItemsFromJson<FieldModel, CropGroup>(
+      jsonMap: jsonMap,
+      fromJson: FieldModel.fromJson,
+      fromGroupMap: (cropMap) => CropGroup(
+        name: cropMap['name'],
+        amount: cropMap['amount'],
+        quantityGroup: cropMap['quantityGroup'],
+        quantitiesWithValues: cropMap['quantitiesWithValues'],
+        reward: cropMap['reward'],
+        fertiliser: cropMap['fertiliser'],
+        earliestPlantedAt: cropMap['time'],
+      ),
       getName: (field) => field.crop?.name ?? 'Unknown',
       getAmount: (field) => field.crop?.amount ?? 0,
       getTime: (field) => field.crop?.plantedAt ?? 0,
-      updateGroup: updateGroup,
-      convertMapToList: convertCropsMapToList,
     );
   }
 
-  List<CropGroup> convertCropsMapToList(Map<String, dynamic> cropMap) {
-    return cropMap.values.map((crop) {
-      return CropGroup(
-        name: crop['name'],
-        amount: crop['amount'],
-        quantityGroup: crop['quantityGroup'],
-        quantitiesWithValues: crop['quantitiesWithValues'],
-        reward: crop['reward'],
-        fertiliser: crop['fertiliser'],
-        earliestPlantedAt: crop['time'],
-      );
-    }).toList();
-  }
-
-  // Atualização de árvores (trees)
   void updateTreesFromJson(Map<String, dynamic> jsonMap) {
-    List<TreeModel> trees = jsonMap.entries
-        .map((entry) => TreeModel.fromJson(entry.value))
-        .toList();
-    createGroupedItems(
-      items: trees,
+    updateItemsFromJson<TreeModel, TreeGroup>(
+      jsonMap: jsonMap,
+      fromJson: TreeModel.fromJson,
+      fromGroupMap: (treeMap) => TreeGroup(
+        amount: treeMap['amount'],
+        quantityGroup: treeMap['quantityGroup'],
+        quantitiesWithValues: treeMap['quantitiesWithValues'],
+        reward: treeMap['reward'],
+        earliestChoppedAt: treeMap['time'],
+      ),
       getName: (_) => 'Tree',
       getAmount: (tree) => tree.wood!.amount!,
       getTime: (tree) => tree.wood!.choppedAt!,
-      updateGroup: updateGroup,
-      convertMapToList: convertTreesMapToList,
     );
   }
 
-  List<TreeGroup> convertTreesMapToList(Map<String, dynamic> treeMap) {
-    return treeMap.values.map((tree) {
-      return TreeGroup(
-        amount: tree['amount'],
-        quantityGroup: tree['quantityGroup'],
-        quantitiesWithValues: tree['quantitiesWithValues'],
-        reward: tree['reward'],
-        earliestChoppedAt: tree['time'],
-      );
-    }).toList();
-  }
-
-  // Atualização de pedras (stones)
   void updateStonesFromJson(Map<String, dynamic> jsonMap) {
-    List<StoneModel> stones = jsonMap.entries
-        .map((entry) => StoneModel.fromJson(entry.value))
-        .toList();
-    createGroupedItems(
-      items: stones,
+    updateItemsFromJson<StoneModel, StoneGroup>(
+      jsonMap: jsonMap,
+      fromJson: StoneModel.fromJson,
+      fromGroupMap: (stoneMap) => StoneGroup(
+        amount: stoneMap['amount'],
+        quantityGroup: stoneMap['quantityGroup'],
+        quantitiesWithValues: stoneMap['quantitiesWithValues'],
+        earliestMinedAt: stoneMap['time'],
+      ),
       getName: (_) => 'Stone',
       getAmount: (stone) => stone.stone!.amount!,
       getTime: (stone) => stone.stone!.minedAt!,
-      updateGroup: updateGroup,
-      convertMapToList: convertStonesMapToList,
     );
   }
 
-  List<StoneGroup> convertStonesMapToList(Map<String, dynamic> stoneMap) {
-    return stoneMap.values.map((stone) {
-      return StoneGroup(
-        amount: stone['amount'],
-        quantityGroup: stone['quantityGroup'],
-        quantitiesWithValues: stone['quantitiesWithValues'],
-        earliestMinedAt: stone['time'],
-      );
-    }).toList();
-  }
-
-  // Atualização de ferro (iron)
   void updateIronsFromJson(Map<String, dynamic> jsonMap) {
-    List<IronModel> irons = jsonMap.entries
-        .map((entry) => IronModel.fromJson(entry.value))
-        .toList();
-    createGroupedItems(
-      items: irons,
+    updateItemsFromJson<IronModel, IronGroup>(
+      jsonMap: jsonMap,
+      fromJson: IronModel.fromJson,
+      fromGroupMap: (ironMap) => IronGroup(
+        amount: ironMap['amount'],
+        quantityGroup: ironMap['quantityGroup'],
+        quantitiesWithValues: ironMap['quantitiesWithValues'],
+        earliestMinedAt: ironMap['time'],
+      ),
       getName: (_) => 'Iron',
       getAmount: (iron) => iron.stone!.amount!,
       getTime: (iron) => iron.stone!.minedAt!,
-      updateGroup: updateGroup,
-      convertMapToList: convertIronsMapToList,
     );
   }
 
-  List<IronGroup> convertIronsMapToList(Map<String, dynamic> ironMap) {
-    return ironMap.values.map((iron) {
-      return IronGroup(
-        amount: iron['amount'],
-        quantityGroup: iron['quantityGroup'],
-        quantitiesWithValues: iron['quantitiesWithValues'],
-        earliestMinedAt: iron['time'],
-      );
-    }).toList();
-  }
-
-  // Função para atualizar ouro a partir de um mapa JSON.
   void updateGoldsFromJson(Map<String, dynamic> jsonMap) {
-    List<GoldModel> golds = jsonMap.entries
-        .map((entry) => GoldModel.fromJson(entry.value))
-        .toList();
-
-    createGroupedItems(
-      items: golds,
+    updateItemsFromJson<GoldModel, GoldGroup>(
+      jsonMap: jsonMap,
+      fromJson: GoldModel.fromJson,
+      fromGroupMap: (goldMap) => GoldGroup(
+        amount: goldMap['amount'],
+        quantityGroup: goldMap['quantityGroup'],
+        quantitiesWithValues: goldMap['quantitiesWithValues'],
+        earliestMinedAt: goldMap['time'],
+      ),
       getName: (_) => 'Gold',
       getAmount: (gold) => gold.stone!.amount!,
       getTime: (gold) => gold.stone!.minedAt!,
-      updateGroup: updateGroup,
-      convertMapToList: convertGoldsMapToList,
     );
   }
 
-  List<GoldGroup> convertGoldsMapToList(Map<String, dynamic> goldMap) {
-    return goldMap.values.map((gold) {
-      return GoldGroup(
-        amount: gold['amount'],
-        quantityGroup: gold['quantityGroup'],
-        quantitiesWithValues: gold['quantitiesWithValues'],
-        earliestMinedAt: gold['time'],
-      );
-    }).toList();
-  }
-
-  // Função para atualizar crimstones a partir de um mapa JSON.
   void updateCrimstonesFromJson(Map<String, dynamic> jsonMap) {
-    List<CrimstoneModel> crimstones = jsonMap.entries
-        .map((entry) => CrimstoneModel.fromJson(entry.value))
-        .toList();
-    createGroupedItems(
-      items: crimstones,
+    updateItemsFromJson<CrimstoneModel, CrimstoneGroup>(
+      jsonMap: jsonMap,
+      fromJson: CrimstoneModel.fromJson,
+      fromGroupMap: (crimstoneMap) => CrimstoneGroup(
+        amount: crimstoneMap['amount'],
+        quantityGroup: crimstoneMap['quantityGroup'],
+        quantitiesWithValues: crimstoneMap['quantitiesWithValues'],
+        earliestMinedAt: crimstoneMap['time'],
+      ),
       getName: (_) => 'Crimstone',
       getAmount: (crimstone) => crimstone.stone!.amount!,
       getTime: (crimstone) => crimstone.stone!.minedAt!,
-      updateGroup: updateGroup,
-      convertMapToList: convertCrimstonesMapToList,
     );
   }
 
-  List<CrimstoneGroup> convertCrimstonesMapToList(
-      Map<String, dynamic> crimstoneMap) {
-    return crimstoneMap.values.map((crimstone) {
-      return CrimstoneGroup(
-        amount: crimstone['amount'],
-        quantityGroup: crimstone['quantityGroup'],
-        quantitiesWithValues: crimstone['quantitiesWithValues'],
-        earliestMinedAt: crimstone['time'],
-      );
-    }).toList();
-  }
-
-  // Função para atualizar oilReserves a partir de um mapa JSON.
-  void updateOilReservesFromJson(Map<String, dynamic> jsonMap) {
-    List<OilReserveModel> oilReserves = jsonMap.entries
-        .map((entry) => OilReserveModel.fromJson(entry.value))
-        .toList();
-    createGroupedItems(
-      items: oilReserves,
-      getName: (_) => 'OilReserve',
-      getAmount: (oilReserve) => oilReserve.oil!.amount!,
-      getTime: (oilReserve) => oilReserve.oil!.drilledAt!,
-      updateGroup: updateGroup,
-      convertMapToList: convertOilReservesMapToList,
-    );
-  }
-
-  List<OilReserveGroup> convertOilReservesMapToList(
-      Map<String, dynamic> oilReserveMap) {
-    return oilReserveMap.values.map((oilReserve) {
-      return OilReserveGroup(
-        amount: oilReserve['amount'],
-        quantityGroup: oilReserve['quantityGroup'],
-        quantitiesWithValues: oilReserve['quantitiesWithValues'],
-        earliestDrilledAt: oilReserve['time'],
-      );
-    }).toList();
-  }
-
-  // Função para atualizar sunstones a partir de um mapa JSON.
   void updateSunstonesFromJson(Map<String, dynamic> jsonMap) {
-    List<SunstoneModel> sunstones = jsonMap.entries
-        .map((entry) => SunstoneModel.fromJson(entry.value))
-        .toList();
-    createGroupedItems(
-      items: sunstones,
+    updateItemsFromJson<SunstoneModel, SunstoneGroup>(
+      jsonMap: jsonMap,
+      fromJson: SunstoneModel.fromJson,
+      fromGroupMap: (sunstoneMap) => SunstoneGroup(
+        amount: sunstoneMap['amount'],
+        quantityGroup: sunstoneMap['quantityGroup'],
+        quantitiesWithValues: sunstoneMap['quantitiesWithValues'],
+        earliestMinedAt: sunstoneMap['time'],
+      ),
       getName: (_) => 'Sunstone',
       getAmount: (sunstone) => sunstone.stone!.amount!,
       getTime: (sunstone) => sunstone.stone!.minedAt!,
-      updateGroup: updateGroup,
-      convertMapToList: convertSunstonesMapToList,
     );
   }
 
-  List<SunstoneGroup> convertSunstonesMapToList(
-      Map<String, dynamic> sunstoneMap) {
-    return sunstoneMap.values.map((sunstone) {
-      return SunstoneGroup(
-        amount: sunstone['amount'],
-        quantityGroup: sunstone['quantityGroup'],
-        quantitiesWithValues: sunstone['quantitiesWithValues'],
-        earliestMinedAt: sunstone['time'],
-      );
-    }).toList();
+  void updateOilReservesFromJson(Map<String, dynamic> jsonMap) {
+    updateItemsFromJson<OilReserveModel, OilReserveGroup>(
+      jsonMap: jsonMap,
+      fromJson: OilReserveModel.fromJson,
+      fromGroupMap: (oilMap) => OilReserveGroup(
+        amount: oilMap['amount'],
+        quantityGroup: oilMap['quantityGroup'],
+        quantitiesWithValues: oilMap['quantitiesWithValues'],
+        earliestDrilledAt: oilMap['time'],
+      ),
+      getName: (_) => 'Oil',
+      getAmount: (oil) => oil.oil!.amount!,
+      getTime: (oil) => oil.oil!.drilledAt!,
+    );
   }
 
-  // Função para atualizar fruitPatches a partir de um mapa JSON.
   void updateFruitPatchesFromJson(Map<String, dynamic> jsonMap) {
-    List<FruitPatchModel> fruitPatches = jsonMap.entries
-        .map((entry) => FruitPatchModel.fromJson(entry.value))
-        .toList();
-    createGroupedItems(
-      items: fruitPatches,
-      getName: (fruitPatch) => fruitPatch.fruit!.name!,
-      getAmount: (fruitPatch) => fruitPatch.fruit!.amount!,
-      getTime: (fruitPatch) => fruitPatch.fruit!.harvestedAt != 0
-          ? fruitPatch.fruit!.harvestedAt!
-          : fruitPatch.fruit!.plantedAt!,
-      updateGroup: updateGroup,
-      convertMapToList: convertFruitPatchesMapToList,
+    updateItemsFromJson<FruitPatchModel, FruitPatchGroup>(
+      jsonMap: jsonMap,
+      fromJson: FruitPatchModel.fromJson,
+      fromGroupMap: (fruitMap) => FruitPatchGroup(
+        name: fruitMap['name'],
+        amount: fruitMap['amount'],
+        quantityGroup: fruitMap['quantityGroup'],
+        quantitiesWithValues: fruitMap['quantitiesWithValues'],
+        earliestHarvestedAt: fruitMap['time'],
+      ),
+      getName: (fruit) => fruit.fruit?.name ?? 'Unknown',
+      getAmount: (fruit) => fruit.fruit?.amount ?? 0,
+      getTime: (fruit) => fruit.fruit!.harvestedAt != 0
+          ? fruit.fruit!.harvestedAt!
+          : fruit.fruit!.plantedAt!,
     );
-  }
-
-  List<FruitPatchGroup> convertFruitPatchesMapToList(
-      Map<String, dynamic> fruitPatchMap) {
-    return fruitPatchMap.values.map((fruitPatch) {
-      return FruitPatchGroup(
-        name: fruitPatch['name'],
-        amount: fruitPatch['amount'],
-        quantityGroup: fruitPatch['quantityGroup'],
-        quantitiesWithValues: fruitPatch['quantitiesWithValues'],
-        earliestHarvestedAt: fruitPatch['time'],
-      );
-    }).toList();
   }
 
   void updateFlowerBedsFromJson(Map<String, dynamic> jsonMap) {
-    if (jsonMap.containsKey('flowerBeds')) {
-      Map<String, dynamic> flowerBedsMap = jsonMap['flowerBeds'];
-      List<FlowerBedModel> flowerBeds = flowerBedsMap.entries
-          .map((entry) => FlowerBedModel.fromJson(entry.value))
-          .where((flowerBed) =>
-              flowerBed.flower != null) // Filtra os valores nulos.
-          .toList();
-      createGroupedItems(
-        items: flowerBeds,
-        getName: (flowerBed) => flowerBed.flower?.name ?? 'Unknown',
-        getAmount: (flowerBed) => flowerBed.flower?.amount ?? 0,
-        getTime: (flowerBed) => flowerBed.flower?.plantedAt ?? 0,
-        updateGroup: updateGroup,
-        convertMapToList: convertFlowerBedsMapToList,
-      );
-    } else {
-      log('No flower beds found in the JSON map.');
-    }
-  }
-
-  List<FlowerBedGroup> convertFlowerBedsMapToList(
-      Map<String, dynamic> flowerBedMap) {
-    return flowerBedMap.values.map((flowerBed) {
-      return FlowerBedGroup(
-        name: flowerBed['name'],
-        amount: flowerBed['amount'],
-        quantityGroup: flowerBed['quantityGroup'],
-        quantitiesWithValues: flowerBed['quantitiesWithValues'],
-        earliestPlantedAt: flowerBed['time'],
-      );
-    }).toList();
+    updateItemsFromJson<FlowerBedModel, FlowerBedGroup>(
+      jsonMap: jsonMap,
+      fromJson: FlowerBedModel.fromJson,
+      fromGroupMap: (flowerMap) {
+        log(flowerMap.toString());
+        return FlowerBedGroup(
+          name: flowerMap['name'],
+          amount: flowerMap['amount'],
+          quantityGroup: flowerMap['quantityGroup'],
+          quantitiesWithValues: flowerMap['quantitiesWithValues'],
+          earliestPlantedAt: flowerMap['time'],
+        );
+      },
+      getName: (flower) => flower.flower?.name ?? 'Unknown',
+      getAmount: (flower) => flower.flower?.amount ?? 0,
+      getTime: (flower) => flower.flower?.plantedAt ?? 0,
+    );
   }
 }

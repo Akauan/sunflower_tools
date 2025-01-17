@@ -43,7 +43,7 @@ class FarmController extends GetxController {
       // Extract fruit data from farm data.
       fruitPatchesData = farmData['fruitPatches'];
       // Extract flower data from farm data.
-      flowerData = farmData['flowers'];
+      flowerData = farmData['flowers']['flowerBeds'];
 
       // Update fields using the crops data.
       groupedController.updateFieldsFromJson(cropsData);
