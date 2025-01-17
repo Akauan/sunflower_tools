@@ -387,7 +387,6 @@ class GroupedController extends GetxController {
     required double Function(T) getAmount,
     required int Function(T) getTime,
   }) {
-    log(jsonMap.toString());
     List<T> items =
         jsonMap.entries.map((entry) => fromJson(entry.value)).toList();
 
@@ -559,7 +558,6 @@ class GroupedController extends GetxController {
       jsonMap: jsonMap,
       fromJson: FlowerBedModel.fromJson,
       fromGroupMap: (flowerMap) {
-        log(flowerMap.toString());
         return FlowerBedGroup(
           name: flowerMap['name'],
           amount: flowerMap['amount'],

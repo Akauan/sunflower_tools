@@ -39,8 +39,6 @@ class HomePageState extends State<HomePage> {
   final LoginController _loginController = Get.find<LoginController>();
   final GroupedController groupedController = Get.find<GroupedController>();
 
-  final Rx<Future<int>?> _listInventory = Rx<Future<int>?>(null);
-
   @override
   void initState() {
     super.initState();
@@ -49,13 +47,12 @@ class HomePageState extends State<HomePage> {
     farmService.intervalMinutes.value =
         int.parse(_loginController.refreshTime.text);
     // Inicia a tarefa periódica para buscar dados
-    _listInventory.value = farmService
-        .startPeriodicTask(int.parse(_loginController.userLandId.text));
+    farmService.startPeriodicTask(int.parse(_loginController.userLandId.text));
   }
 
   Future<void> reloadData() async {
     // Realiza a fetch inicial dos dados
-    _listInventory.value = farmService.performInitialFetchIfNeeded(
+    farmService.performInitialFetchIfNeeded(
       int.parse(_loginController.userLandId.text),
     );
   }
@@ -83,7 +80,7 @@ class HomePageState extends State<HomePage> {
                 () {
                   // Isso agora monitora a execução do Future e atualiza quando `_listInventory` mudar
                   return FutureBuilder(
-                    future: _listInventory.value,
+                    future: farmService.listInventory.value,
                     builder: (context, snapshot) {
                       if (snapshot.hasError) {
                         return ContainerComponent(

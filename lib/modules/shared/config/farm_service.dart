@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:sunflower_tools/modules/shared/config/interceptor.dart';
 import 'package:sunflower_tools/modules/shared/config/local_secure_data.dart';
@@ -32,21 +33,22 @@ class FarmService {
   // Start the periodic task and return a Stream
   // Atualize o método `startPeriodicTask` para garantir que ele seja robusto:
 
-  Future<int> startPeriodicTask(int farmID) async {
+  void startPeriodicTask(int farmID) async {
     // Cancel any existing timer
     _timer?.cancel();
 
     // Perform initial fetch and get the status code if needed
-    final int initialStatusCode = await performInitialFetchIfNeeded(farmID);
+    listInventory.value = performInitialFetchIfNeeded(farmID);
 
     // Start a new periodic timer
     _timer =
         Timer.periodic(Duration(minutes: intervalMinutes.value), (timer) async {
-      await getData(farmID); // Call the getData function periodically
+      log('Fetching data from the server...');
+      listInventory.value =
+          getData(farmID); // Call the getData function periodically
     });
 
     // Return the status code from the initial fetch
-    return initialStatusCode;
   }
 
   // Stop the periodic task
@@ -122,10 +124,10 @@ class FarmService {
     }
 
     // Make a new request and update the last request timestamp
-    final result = await getData(farmID);
+    listInventory.value = getData(farmID);
     await LocalSecureData.saveSecureData(
         lastRequestKey, DateTime.now().millisecondsSinceEpoch.toString());
-    return result;
+    return listInventory.value!;
   }
 
   // Function to save the timestamp of the last request
