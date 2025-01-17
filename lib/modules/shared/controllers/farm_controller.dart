@@ -65,6 +65,9 @@ class FarmController extends GetxController {
       groupedController.updateFruitPatchesFromJson(fruitPatchesData);
       // Update fruit using the flower data.
       groupedController.updateFlowerBedsFromJson(flowerData);
+
+      // Create and sort the inventory list.
+      groupedController.createAndSortInventoryList();
     } else {
       // Throw an exception if the body does not contain 'farm'.
       throw Exception('Expected body to contain farm');

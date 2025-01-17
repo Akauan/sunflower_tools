@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:get/get.dart';
+import 'package:sunflower_tools/modules/shared/config/cooldown_controller.dart';
 import 'package:sunflower_tools/modules/shared/config/locations.dart';
 import 'package:sunflower_tools/modules/shared/config/notification_service.dart';
 import 'package:sunflower_tools/modules/shared/config/timer.dart';
@@ -34,6 +35,8 @@ class GroupedController extends GetxController {
 
   RxList<Map<String, dynamic>> inventoryListItems =
       <Map<String, dynamic>>[].obs;
+
+  final CooldownController cooldownController = Get.put(CooldownController());
 
   void createInventoryListItems() {
     inventoryListItems.clear();
@@ -194,6 +197,9 @@ class GroupedController extends GetxController {
     if (T == FieldModel) {
       groupedCrops = groupedItems as List<CropGroup>;
       for (var crop in groupedCrops) {
+        log(addCooldownWithTimezone(crop.earliestPlantedAt!,
+                getCropGrowTime(crop.name.toLowerCase()), 'America/Sao_Paulo')
+            .toString());
         createNotification(crop.name, crop.earliestPlantedAt!, crop.name);
       }
     } else if (T == TreeModel) {
@@ -244,12 +250,115 @@ class GroupedController extends GetxController {
     }
   }
 
+  DateTime getItemTime(Map<String, dynamic> item) {
+    // Obtenha o tipo e o tempo específico do item
+    if (item['data'] is CropGroup) {
+      var crop = item['data'] as CropGroup;
+      return addCooldownWithTimezone(
+        crop.earliestPlantedAt!,
+        getCropGrowTime(crop.name.toLowerCase()),
+        'America/Sao_Paulo',
+      );
+    } else if (item['data'] is TreeGroup) {
+      var tree = item['data'] as TreeGroup;
+      return addCooldownWithTimezone(
+        tree.earliestChoppedAt!,
+        getCropGrowTime('tree'), // Substitua pela lógica correta
+        'America/Sao_Paulo',
+      );
+    } else if (item['data'] is StoneGroup) {
+      var stone = item['data'] as StoneGroup;
+      return addCooldownWithTimezone(
+        stone.earliestMinedAt!,
+        getCropGrowTime('stone'), // Substitua pela lógica correta
+        'America/Sao_Paulo',
+      );
+    } else if (item['data'] is IronGroup) {
+      var iron = item['data'] as IronGroup;
+      return addCooldownWithTimezone(
+        iron.earliestMinedAt!,
+        getCropGrowTime('iron'), // Substitua pela lógica correta
+        'America/Sao_Paulo',
+      );
+    } else if (item['data'] is GoldGroup) {
+      var gold = item['data'] as GoldGroup;
+      return addCooldownWithTimezone(
+        gold.earliestMinedAt,
+        getCropGrowTime('gold'), // Substitua pela lógica correta
+        'America/Sao_Paulo',
+      );
+    } else if (item['data'] is CrimstoneGroup) {
+      var crimstone = item['data'] as CrimstoneGroup;
+      return addCooldownWithTimezone(
+        crimstone.earliestMinedAt,
+        getCropGrowTime('crimstone'), // Substitua pela lógica correta
+        'America/Sao_Paulo',
+      );
+    } else if (item['data'] is OilReserveGroup) {
+      var oil = item['data'] as OilReserveGroup;
+      return addCooldownWithTimezone(
+        oil.earliestDrilledAt,
+        getCropGrowTime('oil'), // Substitua pela lógica correta
+        'America/Sao_Paulo',
+      );
+    } else if (item['data'] is SunstoneGroup) {
+      var sunstone = item['data'] as SunstoneGroup;
+      return addCooldownWithTimezone(
+        sunstone.earliestMinedAt,
+        getCropGrowTime('sunstone'), // Substitua pela lógica correta
+        'America/Sao_Paulo',
+      );
+    } else if (item['data'] is FruitPatchGroup) {
+      var fruit = item['data'] as FruitPatchGroup;
+      return addCooldownWithTimezone(
+        fruit.earliestHarvestedAt,
+        getCropGrowTime(
+            fruit.name.toLowerCase()), // Substitua pela lógica correta
+        'America/Sao_Paulo',
+      );
+    } else if (item['data'] is FlowerBedGroup) {
+      var flower = item['data'] as FlowerBedGroup;
+      return addCooldownWithTimezone(
+        flower.earliestPlantedAt,
+        getCropGrowTime(
+            flower.name.toLowerCase()), // Substitua pela lógica correta
+        'America/Sao_Paulo',
+      );
+    } else {
+      throw Exception(
+          'Tipo desconhecido'); // Tratamento de erro para tipos desconhecidos
+    }
+  }
+
+  void createAndSortInventoryList() {
+    createInventoryListItems();
+
+    // Ordenando a lista
+    inventoryListItems.sort((a, b) {
+      DateTime timeA = getItemTime(a);
+      DateTime timeB = getItemTime(b);
+      DateTime now = DateTime.now();
+
+      // Verifica se o tempo já passou para ambos os itens
+      bool isTimeAPast = timeA.isBefore(now);
+      bool isTimeBPast = timeB.isBefore(now);
+
+      if (isTimeAPast && !isTimeBPast) {
+        // Se o tempo de A já passou e o de B não, coloca A depois
+        return 1;
+      } else if (!isTimeAPast && isTimeBPast) {
+        // Se o tempo de B já passou e o de A não, coloca B depois
+        return -1;
+      } else {
+        // Ambos estão no mesmo grupo (passado ou futuro), ordena normalmente
+        return timeA.compareTo(timeB);
+      }
+    });
+  }
+
   void updateGroup(Map<String, dynamic> group, dynamic item) {
     double amount;
     int time;
-
-    createInventoryListItems();
-    // sortInventoryListItems(inventoryListItems);
 
     if (item is FieldModel && item.crop != null) {
       amount = item.crop!.amount!;
