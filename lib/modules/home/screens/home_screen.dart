@@ -47,7 +47,8 @@ class HomePageState extends State<HomePage> {
     farmService.intervalMinutes.value =
         int.parse(_loginController.refreshTime.text);
     // Inicia a tarefa periódica para buscar dados
-    farmService.startPeriodicTask(int.parse(_loginController.userLandId.text));
+    farmService
+        .startBackgroundTask(int.parse(_loginController.userLandId.text));
   }
 
   Future<void> reloadData() async {

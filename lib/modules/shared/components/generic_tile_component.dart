@@ -120,7 +120,7 @@ class GenericTileComponent<T> extends StatelessWidget {
                                             : Container(), // Empty container if reward type is neither Seed nor Coin
                                 const SizedBox(width: 10),
                                 TextComponent(
-                                  text: '${item['name']}: ${item['amount']}',
+                                  text: '${item['amount']}',
                                   size: kFontSizeSmall,
                                   color: ThemeColor.blackColor,
                                 ),

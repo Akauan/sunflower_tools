@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:sunflower_tools/modules/shared/config/interceptor.dart';
 import 'package:sunflower_tools/modules/shared/config/local_secure_data.dart';
 import 'package:sunflower_tools/modules/shared/controllers/farm_controller.dart';
+import 'package:flutter_background/flutter_background.dart';
 
 class FarmService {
   final FarmController farmController = Get.find<FarmController>();
@@ -33,23 +34,28 @@ class FarmService {
   // Start the periodic task and return a Stream
   // Atualize o método `startPeriodicTask` para garantir que ele seja robusto:
 
-  void startPeriodicTask(int farmID) async {
-    // Cancel any existing timer
-    _timer?.cancel();
+  void startBackgroundTask(int farmID) async {
+    bool success = await FlutterBackground.enableBackgroundExecution();
+    if (success) {
+      // Cancel any existing timer
+      _timer?.cancel();
 
-    // Perform initial fetch and get the status code if needed
-    listInventory.value = performInitialFetchIfNeeded(farmID);
+      // Perform initial fetch and get the status code if needed
+      listInventory.value = performInitialFetchIfNeeded(farmID);
 
-    // Start a new periodic timer
-    _timer =
-        Timer.periodic(Duration(minutes: intervalMinutes.value), (timer) async {
-      log('Fetching data from the server...');
-      listInventory.value =
-          getData(farmID); // Call the getData function periodically
-    });
-
-    // Return the status code from the initial fetch
+      // Start a new periodic timer
+      _timer = Timer.periodic(Duration(minutes: intervalMinutes.value),
+          (timer) async {
+        log('Fetching data from the server...');
+        listInventory.value =
+            getData(farmID); // Call the getData function periodically
+      });
+    }
   }
+  // void startPeriodicTask() async {
+
+  //   // Return the status code from the initial fetch
+  // }
 
   // Stop the periodic task
   void stopPeriodicTask() {
