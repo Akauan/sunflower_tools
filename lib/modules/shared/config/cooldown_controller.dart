@@ -6,10 +6,11 @@ class CooldownController extends GetxController {
       0.obs; // Observable variable for the cooldown time in seconds.
   var isCooldownActive =
       false.obs; // Observable variable to indicate if the cooldown is active.
+  // ignore: unused_field
   Timer? _timer; // Variable to store the Timer.
 
   // Function to start the cooldown with a specific time in seconds.
-  void startCooldown(int cooldown, String itemTitle) {
+  void startCooldown(int cooldown) {
     if (isCooldownActive.value) return;
 
     // Set the cooldown time, ensuring it is not negative.
@@ -28,13 +29,6 @@ class CooldownController extends GetxController {
         timer.cancel(); // Cancel the timer.
       }
     });
-  }
-
-  @override
-  void onClose() {
-    _timer?.cancel(); // Cancel the timer when the controller is closed.
-    isCooldownActive.value = false; // Reset the state.
-    super.onClose(); // Call the onClose method of the base class.
   }
 
   // Function to format the cooldown time into a readable string.

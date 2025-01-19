@@ -46,8 +46,8 @@ class GenericTileComponent<T> extends StatelessWidget {
 
     // Start the cooldown if it's not active.
     if (!cooldownController.isCooldownActive.value) {
-      cooldownController.startCooldown(
-          cooldown, title); // Pass title to be used in notification
+      cooldownController
+          .startCooldown(cooldown); // Pass title to be used in notification
     }
 
     return Obx(
