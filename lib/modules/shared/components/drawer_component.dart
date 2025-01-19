@@ -8,6 +8,7 @@ import 'package:sunflower_tools/modules/shared/constants/size_constants.dart';
 import 'package:sunflower_tools/modules/shared/controllers/farm_controller.dart';
 import 'package:sunflower_tools/modules/shared/config/local_secure_data.dart';
 import 'package:sunflower_tools/modules/shared/theme/theme.dart';
+import 'package:workmanager/workmanager.dart';
 
 class DrawerComponent extends StatelessWidget {
   const DrawerComponent({super.key});
@@ -81,6 +82,7 @@ class DrawerComponent extends StatelessWidget {
                 Navigator.pop(context);
                 Navigator.pushReplacementNamed(context, '/loginPage');
                 NotificationService().cancelAllNotifications();
+                Workmanager().cancelAll();
                 loginController.clearVariables();
                 LocalSecureData.clearDatas();
               })

@@ -5,7 +5,6 @@ import 'package:get/get.dart';
 import 'package:sunflower_tools/modules/shared/config/interceptor.dart';
 import 'package:sunflower_tools/modules/shared/config/local_secure_data.dart';
 import 'package:sunflower_tools/modules/shared/controllers/farm_controller.dart';
-import 'package:flutter_background/flutter_background.dart';
 
 class FarmService {
   final FarmController farmController = Get.find<FarmController>();
@@ -35,22 +34,20 @@ class FarmService {
   // Atualize o método `startPeriodicTask` para garantir que ele seja robusto:
 
   void startBackgroundTask(int farmID) async {
-    bool success = await FlutterBackground.enableBackgroundExecution();
-    if (success) {
-      // Cancel any existing timer
-      _timer?.cancel();
+    // Cancel any existing timer
+    _timer?.cancel();
 
-      // Perform initial fetch and get the status code if needed
-      listInventory.value = performInitialFetchIfNeeded(farmID);
+    // Perform initial fetch and get the status code if needed
+    listInventory.value = performInitialFetchIfNeeded(farmID);
 
-      // Start a new periodic timer
-      _timer = Timer.periodic(Duration(minutes: intervalMinutes.value),
-          (timer) async {
-        log('Fetching data from the server...');
-        listInventory.value =
-            getData(farmID); // Call the getData function periodically
-      });
-    }
+    // Start a new periodic timer
+    _timer =
+        Timer.periodic(Duration(minutes: intervalMinutes.value), (timer) async {
+      log('Fetching data from the server...');
+
+      listInventory.value =
+          getData(farmID); // Call the getData function periodically
+    });
   }
   // void startPeriodicTask() async {
 
@@ -111,12 +108,6 @@ class FarmService {
   Future<int> performInitialFetchIfNeeded(int farmID) async {
     final String? lastRequestTime =
         await LocalSecureData.readSecureData(lastRequestKey);
-    final String? savedData = await LocalSecureData.readSecureData(farmDataKey);
-
-    if (savedData != null) {
-      Map<String, dynamic> decodedData = jsonDecode(savedData);
-      await farmController.getFarm(body: decodedData); // Load saved farm data
-    }
 
     if (lastRequestTime != null) {
       final int lastRequestTimestamp = int.parse(lastRequestTime);

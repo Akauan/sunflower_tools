@@ -123,6 +123,8 @@ class GroupedController extends GetxController {
     if (T == FieldModel) {
       groupedCrops = groupedItems as List<CropGroup>;
       for (var crop in groupedCrops) {
+        NotificationService.showInstantNotification(
+            'Criando noticação', 'Trabalhando em novas notificações');
         createNotification(crop.name, crop.earliestPlantedAt!, crop.name);
       }
     } else if (T == TreeModel) {
