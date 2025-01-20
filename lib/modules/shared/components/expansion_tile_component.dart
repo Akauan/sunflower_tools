@@ -1,7 +1,11 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:sunflower_tools/modules/shared/components/text_component.dart';
 import 'package:sunflower_tools/modules/shared/constants/image_way_constants.dart';
 import 'package:sunflower_tools/modules/shared/constants/size_constants.dart';
+import 'package:sunflower_tools/modules/shared/controllers/prices_controller.dart';
 import 'package:sunflower_tools/modules/shared/theme/theme.dart';
 
 // ignore: must_be_immutable
@@ -16,6 +20,8 @@ class ExpansionTileComponent extends StatelessWidget {
   final String? subsubTittleAsset;
   final String? doubleTittle;
   final String? doubleTittleAsset;
+  final String? doubleSubTittle;
+  final String? doubleSubTittleAsset;
 
   const ExpansionTileComponent({
     super.key,
@@ -29,10 +35,14 @@ class ExpansionTileComponent extends StatelessWidget {
     this.subTittleAsset,
     this.doubleTittle,
     this.doubleTittleAsset,
+    this.doubleSubTittle,
+    this.doubleSubTittleAsset,
   });
 
   @override
   Widget build(BuildContext context) {
+    final PricesController pricesController = Get.find<PricesController>();
+
     return subtittleTile == null
         ? ExpansionTile(
             enabled: enabled,
@@ -117,25 +127,55 @@ class ExpansionTileComponent extends StatelessWidget {
             subtitle: Column(
               children: [
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    if (subTittleAsset != null)
-                      Image.asset(
-                        subTittleAsset!,
-                        width: kIconsSizeUltraSmall,
-                        height: kIconsSizeUltraSmall,
-                        fit: BoxFit.fill,
-                      ),
-                    if (subTittleAsset != null)
-                      const SizedBox(
-                        width: 10,
-                      ),
-                    TextComponent(
-                      text: subtittleTile!,
-                      overflow: TextOverflow.ellipsis,
-                      size: kFontSizeSmall,
-                      maxFontSize: kFontSizeSmall,
-                      minFontSize: kFontSizeSmall,
-                      color: ThemeColor.greyColor,
+                    Row(
+                      children: [
+                        if (subTittleAsset != null)
+                          Image.asset(
+                            subTittleAsset!,
+                            width: kIconsSizeUltraSmall,
+                            height: kIconsSizeUltraSmall,
+                            fit: BoxFit.fill,
+                          ),
+                        if (subtittleTile != null)
+                          const SizedBox(
+                            width: 10,
+                          ),
+                        TextComponent(
+                          text: subtittleTile!,
+                          overflow: TextOverflow.ellipsis,
+                          size: kFontSizeSmall,
+                          maxFontSize: kFontSizeSmall,
+                          minFontSize: kFontSizeSmall,
+                          color: ThemeColor.greyColor,
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        if (doubleSubTittle != null)
+                          TextComponent(
+                            text: pricesController.getP2pPrice(
+                                doubleSubTittle!, double.parse(subtittleTile!)),
+                            overflow: TextOverflow.ellipsis,
+                            size: kFontSizeSmall,
+                            maxFontSize: kFontSizeSmall,
+                            minFontSize: kFontSizeSmall,
+                            color: ThemeColor.greyColor,
+                          ),
+                        if (doubleSubTittle != null)
+                          const SizedBox(
+                            width: 10,
+                          ),
+                        if (doubleSubTittle != null)
+                          Image.asset(
+                            getImageWay('sfl'),
+                            width: kIconsSizeUltraSmall,
+                            height: kIconsSizeUltraSmall,
+                            fit: BoxFit.fill,
+                          ),
+                      ],
                     ),
                   ],
                 ),

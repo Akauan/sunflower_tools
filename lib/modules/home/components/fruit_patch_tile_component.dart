@@ -16,6 +16,7 @@ class FruitPatchTileComponent extends StatelessWidget {
     return GenericTileComponent(
       item: fruitPatch,
       title: fruitPatch.name,
+      doubleSubTittle: fruitPatch.name,
       imageName: fruitPatch.name,
       earliestTime: fruitPatch.earliestHarvestedAt,
       getGrowTime: (name) => getCropGrowTime(fruitPatch.name.toLowerCase()),

@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:sunflower_tools/modules/login/controllers/login_controller.dart';
 import 'package:sunflower_tools/modules/shared/components/icon_component.dart';
 import 'package:sunflower_tools/modules/shared/components/text_component.dart';
-import 'package:sunflower_tools/modules/shared/config/notification_service.dart';
+import 'package:sunflower_tools/modules/shared/services/notification_service.dart';
 import 'package:sunflower_tools/modules/shared/constants/size_constants.dart';
 import 'package:sunflower_tools/modules/shared/controllers/farm_controller.dart';
 import 'package:sunflower_tools/modules/shared/config/local_secure_data.dart';

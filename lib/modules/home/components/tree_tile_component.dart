@@ -17,6 +17,7 @@ class TreeTileComponent extends StatelessWidget {
       item: tree,
       amount: tree.amount,
       title: 'Tree',
+      doubleSubTittle: 'Wood',
       imageName: 'wood',
       earliestTime: tree.earliestChoppedAt!,
       getGrowTime: (name) => getCropGrowTime('tree'),

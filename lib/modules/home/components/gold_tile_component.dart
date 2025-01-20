@@ -17,6 +17,7 @@ class GoldTileComponent extends StatelessWidget {
     return GenericTileComponent(
       item: gold,
       title: 'Gold',
+      doubleSubTittle: 'Gold',
       imageName: 'gold',
       earliestTime: gold.earliestMinedAt,
       getGrowTime: (name) => getCropGrowTime('gold'),

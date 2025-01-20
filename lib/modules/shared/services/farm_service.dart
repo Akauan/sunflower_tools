@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import 'package:sunflower_tools/modules/shared/config/interceptor.dart';
 import 'package:sunflower_tools/modules/shared/config/local_secure_data.dart';
 import 'package:sunflower_tools/modules/shared/controllers/farm_controller.dart';
+import 'package:sunflower_tools/modules/shared/services/exchange_service.dart';
+import 'package:sunflower_tools/modules/shared/services/prices_service.dart';
 
 class FarmService {
   final FarmController farmController = Get.find<FarmController>();
@@ -39,6 +41,8 @@ class FarmService {
 
     // Perform initial fetch and get the status code if needed
     listInventory.value = performInitialFetchIfNeeded(farmID);
+    PricesService().getPricesData();
+    ExchangeService().getExchangeData();
 
     // Start a new periodic timer
     _timer =

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:sunflower_tools/modules/shared/config/notification_service.dart';
+import 'package:sunflower_tools/modules/shared/services/notification_service.dart';
 import 'package:sunflower_tools/modules/shared/constants/size_constants.dart';
 import 'package:sunflower_tools/modules/shared/theme/theme.dart';
 

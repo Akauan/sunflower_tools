@@ -16,6 +16,7 @@ class StoneTileComponent extends StatelessWidget {
     return GenericTileComponent(
       item: stone,
       title: 'Stone',
+      doubleSubTittle: 'Stone',
       imageName: 'stone',
       earliestTime: stone.earliestMinedAt!,
       getGrowTime: (name) => getCropGrowTime('stone'),

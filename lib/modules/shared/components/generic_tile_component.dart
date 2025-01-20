@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart'; // Imports the Flutter library.
 import 'package:get/get.dart'; // Imports the GetX library for state management.
 import 'package:sunflower_tools/modules/shared/components/expansion_tile_component.dart'; // Imports the ExpansionTile component.
@@ -6,6 +8,7 @@ import 'package:sunflower_tools/modules/shared/constants/image_way_constants.dar
 import 'package:sunflower_tools/modules/shared/constants/size_constants.dart'; // Imports general constants.
 import 'package:sunflower_tools/modules/shared/config/cooldown_controller.dart'; // Imports the CooldownController.
 import 'package:sunflower_tools/modules/shared/config/timer.dart';
+import 'package:sunflower_tools/modules/shared/controllers/prices_controller.dart';
 import 'package:sunflower_tools/modules/shared/theme/theme.dart'; // Imports the Theme.
 
 class GenericTileComponent<T> extends StatelessWidget {
@@ -18,6 +21,7 @@ class GenericTileComponent<T> extends StatelessWidget {
   final List<Map<String, dynamic>> quantitiesWithValues;
   final double amount; // List of quantities with values.
   final String plotsImage;
+  final String? doubleSubTittle;
 
   const GenericTileComponent({
     super.key,
@@ -30,6 +34,7 @@ class GenericTileComponent<T> extends StatelessWidget {
     required this.quantitiesWithValues,
     required this.amount,
     required this.plotsImage,
+    this.doubleSubTittle,
   }); // Constructor with required parameters.
 
   @override
@@ -49,7 +54,6 @@ class GenericTileComponent<T> extends StatelessWidget {
       cooldownController
           .startCooldown(cooldown); // Pass title to be used in notification
     }
-
     return Obx(
       () => ExpansionTileComponent(
         imageName: imageName,
@@ -67,6 +71,7 @@ class GenericTileComponent<T> extends StatelessWidget {
             ? 'assets/images/png/ui/sandtimer.png'
             : 'assets/images/png/ui/confirm.png',
         subtittleTile: amount.toStringAsFixed(2),
+        doubleSubTittle: doubleSubTittle,
         enabled: true,
         child: Column(
           children: [

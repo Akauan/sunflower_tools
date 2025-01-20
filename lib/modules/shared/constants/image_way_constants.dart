@@ -84,6 +84,7 @@ class ImageWayConstants {
     "yellow lotus": 'assets/images/png/icons/Yellow Lotus.png',
     "yellow pansy": 'assets/images/png/icons/Yellow Pansy.png',
     "coin": 'assets/images/webp/coins.webp',
+    "sfl": 'assets/images/webp/sfl.webp',
   };
 }
 

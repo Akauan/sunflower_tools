@@ -15,6 +15,7 @@ class CropTileComponent extends StatelessWidget {
     return GenericTileComponent(
       item: field,
       title: field.name,
+      doubleSubTittle: field.name,
       amount: field.amount,
       imageName: field.name,
       earliestTime: field.earliestPlantedAt!,

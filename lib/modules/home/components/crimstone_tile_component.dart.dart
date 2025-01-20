@@ -17,6 +17,7 @@ class CrimstoneTileComponent extends StatelessWidget {
     return GenericTileComponent(
       item: crimstone,
       title: 'Crimstone',
+      doubleSubTittle: 'Crimstone',
       imageName: 'crimstone',
       earliestTime: crimstone.earliestMinedAt,
       getGrowTime: (name) => getCropGrowTime('crimstone'),

@@ -17,6 +17,7 @@ class IronTileComponent extends StatelessWidget {
     return GenericTileComponent(
       item: iron,
       title: 'Iron',
+      doubleSubTittle: 'Iron',
       imageName: 'iron',
       earliestTime: iron.earliestMinedAt!,
       getGrowTime: (name) => getCropGrowTime('iron'),

@@ -3,7 +3,7 @@ import 'package:get/get.dart'; // Import the GetX library for navigation.
 import 'package:sunflower_tools/modules/login/controllers/login_controller.dart';
 import 'package:sunflower_tools/modules/shared/controllers/farm_controller.dart';
 import 'package:sunflower_tools/modules/shared/config/local_secure_data.dart';
-import 'package:sunflower_tools/modules/shared/config/farm_service.dart';
+import 'package:sunflower_tools/modules/shared/services/farm_service.dart';
 
 class LoginService {
   // Controller to manage and store login information
