@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:get/get.dart'; // Imports the GetX library for state management.
 
 class PricesController extends GetxController {
@@ -19,9 +21,5 @@ class PricesController extends GetxController {
     seqPrices = pricesData['seq'];
     // Extract stones data from farm data.
     gePrices = pricesData['ge'];
-  }
-
-  getP2pPrice(String itemName, double quantity) {
-    return (p2pPrices[itemName] * quantity).toStringAsFixed(4);
   }
 }

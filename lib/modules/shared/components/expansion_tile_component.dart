@@ -156,8 +156,11 @@ class ExpansionTileComponent extends StatelessWidget {
                       children: [
                         if (doubleSubTittle != null)
                           TextComponent(
-                            text: pricesController.getP2pPrice(
-                                doubleSubTittle!, double.parse(subtittleTile!)),
+                            text: (pricesController.p2pPrices[doubleSubTittle] *
+                                    double.parse(subtittleTile!))
+                                .toStringAsFixed(4),
+                            // pricesController.getP2pPrice(
+                            //     doubleSubTittle!, double.parse(subtittleTile!)),
                             overflow: TextOverflow.ellipsis,
                             size: kFontSizeSmall,
                             maxFontSize: kFontSizeSmall,

@@ -21,7 +21,9 @@ import 'package:sunflower_tools/modules/shared/components/search_icon_component.
 import 'package:sunflower_tools/modules/shared/components/text_component.dart';
 import 'package:sunflower_tools/modules/shared/constants/size_constants.dart';
 import 'package:sunflower_tools/modules/shared/controllers/grouped_controller.dart';
+import 'package:sunflower_tools/modules/shared/services/exchange_service.dart';
 import 'package:sunflower_tools/modules/shared/services/farm_service.dart';
+import 'package:sunflower_tools/modules/shared/services/prices_service.dart';
 import 'package:sunflower_tools/modules/shared/theme/theme.dart';
 
 class HomePage extends StatefulWidget {
@@ -47,8 +49,10 @@ class HomePageState extends State<HomePage> {
     farmService.intervalMinutes.value =
         int.parse(_loginController.refreshTime.text);
     // Inicia a tarefa periódica para buscar dados
-    farmService
-        .startBackgroundTask(int.parse(_loginController.userLandId.text));
+    PricesService().getPricesData();
+    ExchangeService().getExchangeData();
+    farmService.listInventory.value = farmService.performInitialFetchIfNeeded(
+        int.parse(_loginController.userLandId.text));
   }
 
   Future<void> reloadData() async {

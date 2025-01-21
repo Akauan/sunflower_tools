@@ -29,16 +29,11 @@ class PricesService {
       // Se a resposta for um sucesso (statusCode 200)
       if (response.statusCode == 200) {
         if (response.data != null) {
-          Map<String, dynamic> newData = response.data;
-
           // Verifique se os dados são diferentes dos dados anteriores
-          if (previousData == null ||
-              previousData.toString() != newData.toString()) {
-            previousData = newData; // Atualizar os dados anteriores
-            await pricesController.getPrices(
-                body:
-                    newData); // Atualizar o exchangeController com os novos dados
-          }
+
+          await pricesController.getPrices(
+              body: response
+                  .data); // Atualizar o exchangeController com os novos dados
         } else {
           return Future.error('Response data is null');
         }

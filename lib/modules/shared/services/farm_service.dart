@@ -35,23 +35,19 @@ class FarmService {
   // Start the periodic task and return a Stream
   // Atualize o método `startPeriodicTask` para garantir que ele seja robusto:
 
-  void startBackgroundTask(int farmID) async {
+  void startWokmanagerTask(int farmID) async {
     // Cancel any existing timer
     _timer?.cancel();
 
     // Perform initial fetch and get the status code if needed
     listInventory.value = performInitialFetchIfNeeded(farmID);
-    PricesService().getPricesData();
-    ExchangeService().getExchangeData();
 
     // Start a new periodic timer
-    _timer =
-        Timer.periodic(Duration(minutes: intervalMinutes.value), (timer) async {
-      log('Fetching data from the server...');
 
-      listInventory.value =
-          getData(farmID); // Call the getData function periodically
-    });
+    log('Fetching data from the server...');
+
+    listInventory.value =
+        getData(farmID); // Call the getData function periodically
   }
   // void startPeriodicTask() async {
 

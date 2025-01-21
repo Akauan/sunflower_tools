@@ -12,27 +12,33 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:workmanager/workmanager.dart';
 
+@pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
-    if (await LocalSecureData.isLogged()) {
-      NotificationService.showInstantNotification('Sunflower Tools',
-          'A tarefa de fundo está sendo executada. Aguarde um momento.');
-      final int farmID =
-          int.parse(await LocalSecureData.readSecureData('farm'));
-      FarmService().startBackgroundTask(
-          farmID); // Use await para garantir que a tarefa termine antes de continuar.
+    try {
+      WidgetsFlutterBinding.ensureInitialized();
+      await NotificationService.init();
+      tz.initializeTimeZones();
+      ControllersInitializedConfig(); // Certifique-se de que essa função está definida corretamente
+      String? farmData = await LocalSecureData.readSecureData('farm');
+      if (farmData != null) {
+        final int farmID = int.parse(farmData);
+        FarmService().startWokmanagerTask(farmID);
+      }
+      log("Background task is running");
+    } catch (e) {
+      log("Error: ${e.toString()}");
     }
-    log("Background task is running");
-    return Future.value(true); // Sempre retorne um Future<bool>
+    return Future.value(true); // Always return a Future<bool>
   });
 }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  Workmanager().initialize(callbackDispatcher);
   await NotificationService.init();
   tz.initializeTimeZones();
   ControllersInitializedConfig();
+  Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
 
   // Registra a tarefa periódica
   Workmanager().registerPeriodicTask(
@@ -43,6 +49,10 @@ void main() async {
     initialDelay: const Duration(seconds: 10), // Delay inicial (opcional)
     constraints: Constraints(
       networkType: NetworkType.connected, // Executa apenas com conexão ativa
+      requiresBatteryNotLow: false,
+      requiresCharging: false,
+      requiresDeviceIdle: false,
+      requiresStorageNotLow: false,
     ),
   );
 
