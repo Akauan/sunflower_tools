@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:get/get.dart'; // Imports the GetX library for state management.
 
 class PricesController extends GetxController {

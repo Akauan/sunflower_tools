@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart'; // Imports the Flutter library.
 import 'package:get/get.dart'; // Imports the GetX library for state management.
 import 'package:sunflower_tools/modules/shared/components/expansion_tile_component.dart'; // Imports the ExpansionTile component.
@@ -8,7 +6,6 @@ import 'package:sunflower_tools/modules/shared/constants/image_way_constants.dar
 import 'package:sunflower_tools/modules/shared/constants/size_constants.dart'; // Imports general constants.
 import 'package:sunflower_tools/modules/shared/config/cooldown_controller.dart'; // Imports the CooldownController.
 import 'package:sunflower_tools/modules/shared/config/timer.dart';
-import 'package:sunflower_tools/modules/shared/controllers/prices_controller.dart';
 import 'package:sunflower_tools/modules/shared/theme/theme.dart'; // Imports the Theme.
 
 class GenericTileComponent<T> extends StatelessWidget {
