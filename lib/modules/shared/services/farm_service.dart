@@ -85,7 +85,7 @@ class FarmService {
             await farmController.getFarm(
                 body: newData); // Atualizar o farmController com os novos dados
             await saveLastRequestTime(); // Salvar o timestamp da solicitação
-            await LocalSecureData.saveSecureData(farmDataKey,
+            await SharedData.saveSecureData(farmDataKey,
                 jsonEncode(response.data)); // Salvar os dados do farm
           }
         } else {
@@ -105,7 +105,7 @@ class FarmService {
   // Function to perform the initial fetch if needed
   Future<int> performInitialFetchIfNeeded(int farmID) async {
     final String? lastRequestTime =
-        await LocalSecureData.readSecureData(lastRequestKey);
+        await SharedData.readSecureData(lastRequestKey);
 
     if (lastRequestTime != null) {
       final int lastRequestTimestamp = int.parse(lastRequestTime);
@@ -120,7 +120,7 @@ class FarmService {
 
     // Make a new request and update the last request timestamp
     listInventory.value = getData(farmID);
-    await LocalSecureData.saveSecureData(
+    await SharedData.saveSecureData(
         lastRequestKey, DateTime.now().millisecondsSinceEpoch.toString());
     return listInventory.value!;
   }
@@ -128,7 +128,6 @@ class FarmService {
   // Function to save the timestamp of the last request
   Future<void> saveLastRequestTime() async {
     final int currentTime = DateTime.now().millisecondsSinceEpoch;
-    await LocalSecureData.saveSecureData(
-        lastRequestKey, currentTime.toString());
+    await SharedData.saveSecureData(lastRequestKey, currentTime.toString());
   }
 }

@@ -54,26 +54,24 @@ class DrawerComponent extends StatelessWidget {
               )
             ],
           )),
-
-          // _listTile(
-          //   icon: Icons.person,
-          //   text: 'Autores',
-          //   onPressed: () {
-          //     /// Close Navigation drawer before
-          //     Navigator.pop(context);
-          //     // Verify the route
-          //     if (ModalRoute.of(context)!.settings.name == '/homePage') {
-          //       Navigator.pushNamed(context, '/authorsListPage');
-          //     } else {
-          //       if (ModalRoute.of(context)!.settings.name ==
-          //           '/bookDetailPage') {
-          //         Navigator.pop(context);
-          //       }
-          //       Navigator.popAndPushNamed(context, '/authorsListPage');
-          //     }
-          //   },
-          // ),
-
+          _listTile(
+            icon: Icons.person,
+            text: 'Play Sunflower Land',
+            onPressed: () {
+              /// Close Navigation drawer before
+              Navigator.pop(context);
+              // Verify the route
+              if (ModalRoute.of(context)!.settings.name == '/homePage') {
+                Navigator.pushNamed(context, '/sunflowerGame');
+              } else {
+                if (ModalRoute.of(context)!.settings.name ==
+                    '/bookDetailPage') {
+                  Navigator.pop(context);
+                }
+                Navigator.popAndPushNamed(context, '/sunflowerGame');
+              }
+            },
+          ),
           _listTile(
               icon: Icons.logout,
               text: 'Sair',
@@ -83,7 +81,7 @@ class DrawerComponent extends StatelessWidget {
                 NotificationService().cancelAllNotifications();
                 // Workmanager().cancelAll();
                 loginController.clearVariables();
-                LocalSecureData.clearDatas();
+                SharedData.clearDatas();
               })
         ],
       ),

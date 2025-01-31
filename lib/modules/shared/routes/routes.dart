@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sunflower_tools/modules/game/screens/game_screen.dart';
 import 'package:sunflower_tools/modules/home/screens/home_screen.dart';
 import 'package:sunflower_tools/modules/login/screens/login_page_screen.dart';
 import 'package:sunflower_tools/modules/login/screens/splash_screen.dart';
@@ -14,6 +15,7 @@ class Routes {
     '/initialPage': (context) => const SplashScreen(),
     '/loginPage': (context) => const LoginPageScreen(),
     '/homePage': (context) => const HomePage(),
+    // '/sunflowerGame': (context) => const GameWebView(),
 
     // '/booksCardListPage': (context) => const BooksCardList(),
     // '/booksListPage': (context) => const BookList(),
