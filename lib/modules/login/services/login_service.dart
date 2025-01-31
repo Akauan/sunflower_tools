@@ -21,8 +21,8 @@ class LoginService {
 
       // If the farmland data exists and is valid, redirect to HomePage
       if (statusCode == 200) {
-        LocalSecureData.saveSecureData('farm', loginController.userLandId.text);
-        LocalSecureData.saveSecureData(
+        SharedData.saveSecureData('farm', loginController.userLandId.text);
+        SharedData.saveSecureData(
             'refreshTime', loginController.refreshTime.text);
 
         Get.offAndToNamed(

@@ -72,12 +72,12 @@ class _SplashScreenState extends State<SplashScreen> {
 
   _functionTimeEnd() async {
     // If the user is already logged in
-    if (await LocalSecureData.isLogged()) {
+    if (await SharedData.isLogged()) {
       // Uses user credentials to access the system automatically
       _loginController.userLandId.text =
-          await LocalSecureData.readSecureData('farm');
+          await SharedData.readSecureData('farm');
       _loginController.refreshTime.text =
-          await LocalSecureData.readSecureData('refreshTime');
+          await SharedData.readSecureData('refreshTime');
 
       Get.offAndToNamed('/homePage');
     }

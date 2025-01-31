@@ -108,7 +108,6 @@ class NotificationService {
     );
   }
 
-  // ! This method is not being used
   Future<void> showActiveNotifications(BuildContext context) async {
     final Widget activeNotificationsDialogContent =
         await _getActiveNotificationsDialogContent(context);
